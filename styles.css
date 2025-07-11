@@ -1,0 +1,442 @@
+/* styles.css - Bebop Practice Program optimized for iPhone 11 Landscape */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    /* Fixed viewport for iPhone 11 landscape: 896px × 414px */
+    width: 896px;
+    height: 414px;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 856px;  /* 896px - 40px padding */
+    height: 374px; /* 414px - 40px padding */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Screen Management */
+.screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    position: relative;
+}
+
+.screen.hidden {
+    display: none !important;
+}
+
+/* Typography */
+.title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.screen-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Button Styling - Optimized for landscape layout */
+.nav-btn {
+    background-color: #d0d0d0;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin: 6px;
+    min-width: 140px;
+    min-height: 36px;
+    max-width: 180px;
+}
+
+.nav-btn:hover {
+    background-color: #c0c0c0;
+}
+
+.nav-btn:active {
+    background-color: #b0b0b0;
+    transform: translateY(1px);
+}
+
+/* Login Input Button Styling - White background with light grey text */
+.login-input-btn {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin: 6px;
+    min-width: 140px;
+    min-height: 36px;
+    max-width: 180px;
+}
+
+.login-input-btn:hover {
+    background-color: #f9f9f9;
+}
+
+.login-input-btn:active {
+    background-color: #f0f0f0;
+    transform: translateY(1px);
+}
+
+/* Button Containers - Centered layout */
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    height: 100%;
+}
+
+/* Key Grid Layout - Compact for landscape and properly centered */
+.key-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 560px; /* Adjusted for 4 columns */
+    width: 560px; /* Fixed width for proper centering */
+    margin: 0 auto; /* Center the grid horizontally */
+    justify-content: center;
+    justify-items: center; /* Center each button within its grid cell */
+}
+
+.key-btn {
+    min-width: 120px;
+    min-height: 36px;
+    font-size: 14px;
+    padding: 6px 12px;
+}
+
+/* Phrase Type Grid Layout - Compact with uniform button sizes and proper centering */
+.phrase-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 480px; /* Reduced width for better centering */
+    width: 480px; /* Fixed width instead of 100% */
+    margin: 0 auto 15px auto; /* Center the grid horizontally */
+    justify-content: center;
+    justify-items: center; /* Center each button within its grid cell */
+}
+
+.phrase-type-grid .nav-btn {
+    /* Force all phrase type buttons to be the same size */
+    min-width: 140px;
+    max-width: 140px;
+    min-height: 36px;
+    max-height: 36px;
+    font-size: 12px; /* Smaller text to fit button */
+    padding: 6px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.phrase-type-grid button:last-child {
+    grid-column: 2 / 3; /* Center the II7 to V7 button in middle column */
+    justify-self: center;
+    min-width: 140px;
+    max-width: 140px;
+}
+
+/* Chord Type Grid Layout - Compact and properly centered */
+.chord-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 480px; /* Reduced width for better centering */
+    width: 480px; /* Fixed width instead of 100% */
+    margin: 0 auto 15px auto; /* Center the grid horizontally */
+    justify-content: center;
+    justify-items: center; /* Center each button within its grid cell */
+}
+
+.chord-type-grid button:last-child {
+    grid-column: 2 / 3; /* Center the II7 to V7 button in middle column */
+    justify-self: center;
+    min-width: 140px;
+    max-width: 140px;
+}
+
+/* Return Arrow - Positioned for landscape */
+.return-arrow {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    background-color: #d0d0d0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    transition: background-color 0.2s ease;
+}
+
+.return-arrow:hover {
+    background-color: #c0c0c0;
+}
+
+/* Footer - Compact */
+.footer {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+}
+
+.attribution {
+    color: #666;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.attribution p {
+    margin: 0;
+}
+
+/* Phrase Generator Screen - CENTERED STAFF LAYOUT */
+#phrase-generator-screen {
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 15px;
+    position: relative;
+}
+
+#phrase-generator-screen .music-display {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.notation-container {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    min-height: 120px;
+    max-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 750px;
+    /* CENTERED BOTH HORIZONTALLY AND VERTICALLY */
+    position: relative;
+}
+
+.notation-container svg {
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+.key-display {
+    font-size: 14px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+}
+
+.action-btn {
+    background-color: #d0d0d0; /* Changed from green to gray to match other buttons */
+    color: #333; /* Changed from white to dark text */
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-width: 100px;
+    min-height: 32px;
+}
+
+.action-btn:hover {
+    background-color: #c0c0c0; /* Darker gray on hover */
+}
+
+.action-btn:active {
+    background-color: #b0b0b0; /* Even darker gray when pressed */
+    transform: translateY(1px);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.action-btn:disabled, .nav-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.action-btn:disabled:hover, .nav-btn:disabled:hover {
+    background-color: #cccccc;
+    transform: none;
+}
+
+.abcjs-inline-audio {
+    display: none !important;
+}
+
+/* ABC.js Notation Styling - CENTERED */
+.notation-container .abcjs-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80px;
+}
+
+.notation-container .abcjs-container svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.notation-container .abcjs-container .abcjs-paper {
+    margin: 0 auto;
+    display: block;
+}
+
+/* Force notation centering */
+.notation-container #notation .abcjs-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.notation-container #notation .abcjs-container > * {
+    margin: 0 auto !important;
+}
+
+.notation-container #notation {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80px;
+    position: relative;
+}
+
+/* Additional centering for ABC.js */
+.notation-container .abcjs-container .abcjs-paper {
+    margin: 0 auto !important;
+    display: block !important;
+    text-align: center !important;
+}
+
+.error-message {
+    color: #d32f2f;
+    background-color: #ffebee;
+    border: 1px solid #f8bbd9;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 12px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Remove all responsive media queries - Fixed size only */
+/* NO RESPONSIVE BEHAVIOR - FIXED IPHONE 11 LANDSCAPE SIZE */ 
