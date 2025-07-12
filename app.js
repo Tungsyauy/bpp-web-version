@@ -22,7 +22,52 @@ let showingPartialPhrase = true;
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
+    preventZoomAndScaling();
 });
+
+// Comprehensive zoom and scaling prevention
+function preventZoomAndScaling() {
+    // Prevent pinch zoom on the entire document
+    document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchend', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    // Prevent double-tap zoom
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
+
+    // Prevent zoom with keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+        if ((event.ctrlKey || event.metaKey) && (event.key === '+' || event.key === '-' || event.key === '0')) {
+            event.preventDefault();
+        }
+    });
+
+    // Prevent context menu on long press
+    document.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+    });
+}
 
 function initializeApp() {
     setupEventListeners();
@@ -428,40 +473,40 @@ function renderABCNotation(abcNotation) {
         // Clear previous content
         notationDiv.innerHTML = '';
         
-        // Render the ABC notation with improved centering
+        // Render the ABC notation optimized for iPhone 13 landscape
         ABCJS.renderAbc(notationDiv, abcNotation, {
             responsive: "resize",
-            scale: 1.2,
-            staffwidth: 500,  // Reduced width for better centering
-            paddingleft: 50,   // Add left padding for centering
-            paddingright: 50,  // Add right padding for centering
-            paddingtop: 20,
-            paddingbottom: 20,
+            scale: 1.0,  // Reduced scale for iPhone 13
+            staffwidth: 450,  // Reduced width for iPhone 13 landscape
+            paddingleft: 40,   // Reduced padding
+            paddingright: 40,  // Reduced padding
+            paddingtop: 15,
+            paddingbottom: 15,
             viewportHorizontal: true,
             viewportVertical: true,
             add_classes: true,
             format: {
-                titlefont: "serif 16",
-                gchordfont: "serif 12",
-                vocalfont: "serif 13",
-                annotationfont: "serif 12",
-                historyfont: "serif 16",
-                infofont: "serif 12",
-                measurefont: "serif 12",
-                partsfont: "serif 12",
-                repeatfont: "serif 12",
-                textfont: "serif 12",
-                voicefont: "serif 12",
-                wordsfont: "serif 12"
+                titlefont: "serif 14",  // Smaller fonts for iPhone 13
+                gchordfont: "serif 10",
+                vocalfont: "serif 11",
+                annotationfont: "serif 10",
+                historyfont: "serif 14",
+                infofont: "serif 10",
+                measurefont: "serif 10",
+                partsfont: "serif 10",
+                repeatfont: "serif 10",
+                textfont: "serif 10",
+                voicefont: "serif 10",
+                wordsfont: "serif 10"
             },
             wrap: {
-                minSpacing: 1.8,
-                maxSpacing: 2.7,
+                minSpacing: 1.6,
+                maxSpacing: 2.4,
                 preferredMeasuresPerLine: 16
             }
         });
         
-        // Additional centering - manually center the svg after rendering
+        // Additional centering and comprehensive scaling prevention
         setTimeout(() => {
             const svg = notationDiv.querySelector('svg');
             if (svg) {
@@ -470,6 +515,40 @@ function renderABCNotation(abcNotation) {
                 svg.style.width = 'auto';
                 svg.style.height = 'auto';
                 
+                // Comprehensive scaling prevention for SVG
+                svg.style.touchAction = 'manipulation';
+                svg.style.webkitTouchCallout = 'none';
+                svg.style.webkitUserSelect = 'none';
+                svg.style.webkitTapHighlightColor = 'transparent';
+                svg.style.pointerEvents = 'none';
+                svg.style.webkitUserZoom = 'fixed';
+                svg.style.mozUserZoom = 'fixed';
+                svg.style.userZoom = 'fixed';
+                svg.style.webkitTextSizeAdjust = 'none';
+                svg.style.msTextSizeAdjust = 'none';
+                svg.style.textSizeAdjust = 'none';
+                
+                // Prevent zoom events specifically on SVG
+                svg.addEventListener('touchstart', function(e) {
+                    if (e.touches.length > 1) e.preventDefault();
+                }, { passive: false });
+                
+                svg.addEventListener('touchmove', function(e) {
+                    if (e.touches.length > 1) e.preventDefault();
+                }, { passive: false });
+                
+                svg.addEventListener('gesturestart', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+                
+                svg.addEventListener('gesturechange', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+                
+                svg.addEventListener('gestureend', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+                
                 // Force center the parent container
                 const container = notationDiv.querySelector('.abcjs-container');
                 if (container) {
@@ -477,7 +556,39 @@ function renderABCNotation(abcNotation) {
                     container.style.justifyContent = 'center';
                     container.style.alignItems = 'center';
                     container.style.width = '100%';
+                    
+                    // Comprehensive scaling prevention for container
+                    container.style.touchAction = 'manipulation';
+                    container.style.webkitTouchCallout = 'none';
+                    container.style.webkitUserSelect = 'none';
+                    container.style.webkitTapHighlightColor = 'transparent';
+                    container.style.webkitUserZoom = 'fixed';
+                    container.style.mozUserZoom = 'fixed';
+                    container.style.userZoom = 'fixed';
+                    
+                    // Prevent zoom events on container
+                    container.addEventListener('touchstart', function(e) {
+                        if (e.touches.length > 1) e.preventDefault();
+                    }, { passive: false });
+                    
+                    container.addEventListener('touchmove', function(e) {
+                        if (e.touches.length > 1) e.preventDefault();
+                    }, { passive: false });
                 }
+                
+                // Apply same prevention to the notation div itself
+                notationDiv.style.touchAction = 'manipulation';
+                notationDiv.style.webkitUserZoom = 'fixed';
+                notationDiv.style.mozUserZoom = 'fixed';
+                notationDiv.style.userZoom = 'fixed';
+                
+                notationDiv.addEventListener('touchstart', function(e) {
+                    if (e.touches.length > 1) e.preventDefault();
+                }, { passive: false });
+                
+                notationDiv.addEventListener('touchmove', function(e) {
+                    if (e.touches.length > 1) e.preventDefault();
+                }, { passive: false });
             }
         }, 100);
         

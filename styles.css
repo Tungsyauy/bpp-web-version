@@ -1,4 +1,4 @@
-/* styles.css - Bebop Practice Program optimized for iPhone 11 Landscape */
+/* styles.css - Bebop Practice Program optimized for iPhone 13 Landscape */
 
 * {
     margin: 0;
@@ -7,12 +7,25 @@
 }
 
 html, body {
-    /* Fixed viewport for iPhone 11 landscape: 896px × 414px */
-    width: 896px;
-    height: 414px;
+    /* Fixed viewport for iPhone 13 landscape: 844px × 390px */
+    width: 844px;
+    height: 390px;
     overflow: hidden;
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
+    /* Comprehensive zoom/scaling prevention */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Prevent pinch zoom */
+    -ms-touch-action: manipulation;
+    -webkit-user-zoom: fixed;
+    -moz-user-zoom: fixed;
+    user-zoom: fixed;
 }
 
 body {
@@ -29,10 +42,15 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    width: 856px;  /* 896px - 40px padding */
-    height: 374px; /* 414px - 40px padding */
+    width: 804px;  /* 844px - 40px padding */
+    height: 350px; /* 390px - 40px padding */
     position: relative;
     overflow: hidden;
+    /* Prevent zoom/scaling */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Screen Management */
@@ -132,9 +150,9 @@ body {
 .key-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    max-width: 560px; /* Adjusted for 4 columns */
-    width: 560px; /* Fixed width for proper centering */
+    gap: 10px;
+    max-width: 520px; /* Adjusted for smaller screen */
+    width: 520px; /* Fixed width for proper centering */
     margin: 0 auto; /* Center the grid horizontally */
     justify-content: center;
     justify-items: center; /* Center each button within its grid cell */
@@ -151,9 +169,9 @@ body {
 .phrase-type-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    max-width: 480px; /* Reduced width for better centering */
-    width: 480px; /* Fixed width instead of 100% */
+    gap: 10px;
+    max-width: 440px; /* Reduced width for smaller screen */
+    width: 440px; /* Fixed width instead of 100% */
     margin: 0 auto 15px auto; /* Center the grid horizontally */
     justify-content: center;
     justify-items: center; /* Center each button within its grid cell */
@@ -186,9 +204,9 @@ body {
 .chord-type-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    max-width: 480px; /* Reduced width for better centering */
-    width: 480px; /* Fixed width instead of 100% */
+    gap: 10px;
+    max-width: 440px; /* Reduced width for smaller screen */
+    width: 440px; /* Fixed width instead of 100% */
     margin: 0 auto 15px auto; /* Center the grid horizontally */
     justify-content: center;
     justify-items: center; /* Center each button within its grid cell */
@@ -214,10 +232,22 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
     transition: background-color 0.2s ease;
+    /* Prevent zoom/scaling on touch */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* CSS Triangle - identical on all devices */
+.triangle-left {
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 8px solid #333;
+    display: inline-block;
 }
 
 .return-arrow:hover {
@@ -268,24 +298,43 @@ body {
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 15px;
-    min-height: 120px;
-    max-height: 150px;
+    padding: 12px;
+    margin-bottom: 12px;
+    min-height: 100px;
+    max-height: 130px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 750px;
+    max-width: 700px;
     /* CENTERED BOTH HORIZONTALLY AND VERTICALLY */
     position: relative;
+    /* Comprehensive scaling prevention */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-zoom: fixed;
+    -moz-user-zoom: fixed;
+    user-zoom: fixed;
+    overflow: hidden;
+    /* Additional iPhone specific fixes */
+    -webkit-text-size-adjust: none;
+    -ms-text-size-adjust: none;
+    text-size-adjust: none;
 }
 
 .notation-container svg {
     max-width: 100%;
     height: auto;
     margin: 0 auto;
+    /* Prevent scaling on touch/click */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: none;
 }
 
 .key-display {
@@ -382,7 +431,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 80px;
+    min-height: 70px;
+    /* Prevent scaling on touch/click */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .notation-container .abcjs-container svg {
@@ -390,6 +444,12 @@ body {
     height: auto;
     display: block;
     margin: 0 auto;
+    /* Prevent scaling on touch/click */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: none;
 }
 
 .notation-container .abcjs-container .abcjs-paper {
@@ -413,8 +473,13 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 80px;
+    min-height: 70px;
     position: relative;
+    /* Prevent scaling on touch/click */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Additional centering for ABC.js */
@@ -439,4 +504,4 @@ body {
 }
 
 /* Remove all responsive media queries - Fixed size only */
-/* NO RESPONSIVE BEHAVIOR - FIXED IPHONE 11 LANDSCAPE SIZE */ 
+/* NO RESPONSIVE BEHAVIOR - FIXED IPHONE 13 LANDSCAPE SIZE */ 
