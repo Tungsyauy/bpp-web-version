@@ -309,26 +309,33 @@ function showScreen(screenName) {
 
 function updateScreenTitles() {
     // Update phrase type screen title
-    if (appState.selectedKey) {
+    if (appState.mode === 'designate' && appState.selectedKey) {
         document.getElementById('phrase-type-title').textContent = 
             `Key of ${appState.selectedKey}: Choose Phrase Type`;
+    } else if (appState.mode === 'random') {
+        document.getElementById('phrase-type-title').textContent = 'Random Key: Choose Phrase Type';
     } else {
         document.getElementById('phrase-type-title').textContent = 'Choose Phrase Type';
     }
 
     // Update chord type screen title
-    if (appState.selectedKey) {
+    if (appState.mode === 'designate' && appState.selectedKey) {
         document.getElementById('chord-type-title').textContent = 
             `Key of ${appState.selectedKey}: Choose 7sus4 Chord Type`;
+    } else if (appState.mode === 'random') {
+        document.getElementById('chord-type-title').textContent = 'Random Key: Choose 7sus4 Chord Type';
     } else {
         document.getElementById('chord-type-title').textContent = 'Choose 7sus4 Chord Type';
     }
 
     // Update length screen title
-    if (appState.selectedKey) {
+    if (appState.mode === 'designate' && appState.selectedKey) {
         let phraseTypeDisplay = getPhraseTypeDisplay(appState.phraseType);
         document.getElementById('length-title').textContent = 
             `Key of ${appState.selectedKey}: ${phraseTypeDisplay}`;
+    } else if (appState.mode === 'random') {
+        let phraseTypeDisplay = getPhraseTypeDisplay(appState.phraseType);
+        document.getElementById('length-title').textContent = `Random Key: ${phraseTypeDisplay}`;
     } else {
         let phraseTypeDisplay = getPhraseTypeDisplay(appState.phraseType);
         document.getElementById('length-title').textContent = `Choose ${phraseTypeDisplay} Length`;
