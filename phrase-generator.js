@@ -353,6 +353,8 @@ function generateLongMajorPhrase(keyName) {
         let phrase = rightCycler.nextItem();  // Start with a major cell
         const cellSets = [MAJOR_CELLS, MAJOR_CELLS, MAJOR_CELLS];  // Three additional cells
         let validPhrase = true;
+        let usedCells = new Set(); // Track used cells to avoid duplicates
+        usedCells.add(phrase.join(' ')); // Add the initial cell
         
         for (const cellSet of cellSets) {
             const firstNoteCurrent = phrase[0].slice(0, -1);
@@ -363,7 +365,16 @@ function generateLongMajorPhrase(keyName) {
                 break;
             }
             
-            const leftCell = new Cycler(compatibleCells).nextItem();
+            // Filter out cells that have already been used
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCells.has(cell.join(' ')));
+            
+            if (unusedCompatibleCells.length === 0) {
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCells.add(leftCell.join(' ')); // Mark this cell as used
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
         }
@@ -388,6 +399,8 @@ function generateLong7sus4Phrase(keyName) {
         let phrase = rightCycler.nextItem();  // Start with a 7sus4 cell
         const cellSets = [CELLS, CELLS, CELLS];  // Three additional cells
         let validPhrase = true;
+        let usedCells = new Set(); // Track used cells to avoid duplicates
+        usedCells.add(phrase.join(' ')); // Add the initial cell
         
         for (const cellSet of cellSets) {
             const firstNoteCurrent = phrase[0].slice(0, -1);
@@ -398,7 +411,16 @@ function generateLong7sus4Phrase(keyName) {
                 break;
             }
             
-            const leftCell = new Cycler(compatibleCells).nextItem();
+            // Filter out cells that have already been used
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCells.has(cell.join(' ')));
+            
+            if (unusedCompatibleCells.length === 0) {
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCells.add(leftCell.join(' ')); // Mark this cell as used
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
         }
@@ -446,13 +468,23 @@ function generateLong25MajorPhrase(keyName) {
     let resolutionCell = resolutionCycler.nextItem();  // This comes from MAJOR_RESOLUTION_CELLS
     let phrase = resolutionCell;
     const cellSets = [window.CELLS2, CELLS, CELLS];
+    let usedCells = new Set(); // Track used cells to avoid duplicates
+    usedCells.add(resolutionCell.join(' ')); // Add the resolution cell
     
     for (const cellSet of cellSets) {
         const firstNoteCurrent = phrase[0].slice(0, -1);
         const dominantCompatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
         
         if (dominantCompatibleCells.length > 0) {
-            const leftCell = new Cycler(dominantCompatibleCells).nextItem();
+            // Filter out cells that have already been used
+            const unusedCompatibleCells = dominantCompatibleCells.filter(cell => !usedCells.has(cell.join(' ')));
+            
+            if (unusedCompatibleCells.length === 0) {
+                throw new Error("No unused compatible cells found for long_25_major phrase");
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCells.add(leftCell.join(' ')); // Mark this cell as used
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
         } else {
@@ -498,6 +530,11 @@ function generateLong25MinorPhrase(keyName) {
     
     // Now add two cells from CELLSM5 to the left, ensuring connectivity
     const cellSets = [window.CELLSM5, window.CELLSM5];  // Two additional cells
+    let usedCells = new Set(); // Track used cells to avoid duplicates
+    
+    // Add the cells from the short phrase to used cells
+    // We need to identify which cells were used in the short phrase
+    // For now, we'll track cells as we add them
     
     for (let i = 0; i < cellSets.length; i++) {
         const cellSet = cellSets[i];
@@ -505,7 +542,15 @@ function generateLong25MinorPhrase(keyName) {
         const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
         
         if (compatibleCells.length > 0) {
-            const leftCell = new Cycler(compatibleCells).nextItem();
+            // Filter out cells that have already been used
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCells.has(cell.join(' ')));
+            
+            if (unusedCompatibleCells.length === 0) {
+                throw new Error("No unused compatible cells found for long_25_minor phrase");
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCells.add(leftCell.join(' ')); // Mark this cell as used
             const adjustedPhrase = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedPhrase);  // Remove last note of left cell, add entire adjusted phrase
         } else {
@@ -527,7 +572,19 @@ function generateTurnaroundPhrase(keyName) {
         const cellSets = [window.CELLS2, window.MINOR_C_CELLS_DOWN2, TURNAROUND_CELLS_1];
         let validPhrase = true;
         
-        for (const cellSet of cellSets) {
+        // Track used cells per cell set to avoid duplicates within the same set
+        let usedCellsPerSet = {
+            'CELLS2': new Set(),
+            'MINOR_C_CELLS_DOWN2': new Set(),
+            'TURNAROUND_CELLS_1': new Set()
+        };
+        
+        // Add the resolution cell to the appropriate set (it's from MAJOR_RESOLUTION_CELLS)
+        usedCellsPerSet['TURNAROUND_CELLS_1'].add(resolutionCell.join(' '));
+        
+        for (let i = 0; i < cellSets.length; i++) {
+            const cellSet = cellSets[i];
+            const cellSetName = i === 0 ? 'CELLS2' : i === 1 ? 'MINOR_C_CELLS_DOWN2' : 'TURNAROUND_CELLS_1';
             const firstNoteCurrent = phrase[0].slice(0, -1);
             const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
             
@@ -536,7 +593,16 @@ function generateTurnaroundPhrase(keyName) {
                 break;
             }
             
-            const leftCell = new Cycler(compatibleCells).nextItem();
+            // Filter out cells that have already been used within this specific cell set
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            
+            if (unusedCompatibleCells.length === 0) {
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
         }
@@ -564,7 +630,18 @@ function generateRhythmChanges56Phrase(keyName) {
         const cellSets = [window.CELLS_up5, CELLS, CELLS];
         let validPhrase = true;
         
-        for (const cellSet of cellSets) {
+        // Track used cells per cell set to avoid duplicates within the same set
+        let usedCellsPerSet = {
+            'CELLS_up5': new Set(),
+            'CELLS': new Set()
+        };
+        
+        // Add the resolution cell to the appropriate set (it's from DFB, which is similar to CELLS)
+        usedCellsPerSet['CELLS'].add(resolutionCell.join(' '));
+        
+        for (let i = 0; i < cellSets.length; i++) {
+            const cellSet = cellSets[i];
+            const cellSetName = i === 0 ? 'CELLS_up5' : 'CELLS';
             const firstNoteCurrent = phrase[0].slice(0, -1);
             const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
             
@@ -573,7 +650,16 @@ function generateRhythmChanges56Phrase(keyName) {
                 break;
             }
             
-            const leftCell = new Cycler(compatibleCells).nextItem();
+            // Filter out cells that have already been used within this specific cell set
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            
+            if (unusedCompatibleCells.length === 0) {
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
         }
@@ -600,7 +686,18 @@ function generateII7ToV7Phrase(keyName) {
         const cellSets = [window.CELLS_down5, window.CELLS_up2, window.CELLS_up2];
         let validPhrase = true;
         
-        for (const cellSet of cellSets) {
+        // Track used cells per cell set to avoid duplicates within the same set
+        let usedCellsPerSet = {
+            'CELLS_down5': new Set(),
+            'CELLS_up2': new Set()
+        };
+        
+        // Add the resolution cell to the appropriate set (it's from CELLS_down5)
+        usedCellsPerSet['CELLS_down5'].add(resolutionCell.join(' '));
+        
+        for (let i = 0; i < cellSets.length; i++) {
+            const cellSet = cellSets[i];
+            const cellSetName = i === 0 ? 'CELLS_down5' : 'CELLS_up2';
             const firstNoteCurrent = phrase[0].slice(0, -1);
             const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
             
@@ -609,7 +706,16 @@ function generateII7ToV7Phrase(keyName) {
                 break;
             }
             
-            const leftCell = new Cycler(compatibleCells).nextItem();
+            // Filter out cells that have already been used within this specific cell set
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            
+            if (unusedCompatibleCells.length === 0) {
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
         }

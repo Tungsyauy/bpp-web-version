@@ -144,9 +144,57 @@
         </div>
     </div>
     
-    <script src="data.js"></script>
-    <script src="music-utils.js"></script>
-    <script src="phrase-generator.js"></script>
-    <script src="app.js"></script>
+    <script src="data.js?v=1.1"></script>
+    <script src="music-utils.js?v=1.1"></script>
+    <script src="phrase-generator.js?v=1.1"></script>
+    <script src="app.js?v=1.1"></script>
+    
+    <!-- Test script to verify arrays are loaded correctly -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== CELL ARRAY VERIFICATION ===');
+            console.log('BASE_MINOR_B_CELLS length:', BASE_MINOR_B_CELLS.length);
+            console.log('BASE_MINOR_C_CELLS length:', BASE_MINOR_C_CELLS.length);
+            console.log('MINOR_B_CELLS length:', MINOR_B_CELLS.length);
+            console.log('MINOR_C_CELLS length:', MINOR_C_CELLS.length);
+            
+            // Check if the new cells are present
+            console.log('Checking for new cells in BASE_MINOR_B_CELLS:');
+            const newBCells = [
+                ["G4", "F#4", "F4", "A4", "E4"],
+                ["F4", "G4", "A4", "C5", "E5"],
+                ["D4", "F4", "A4", "C5", "E5"],
+                ["G4","F#4","F4","E4","D4"],
+                ["F4","C4","C#4","E4","D4"],
+                ["A4","C5","C#5","E5","D5"],
+                ["E4","F4","C#4","E4","D4"]
+            ];
+            
+            newBCells.forEach((cell, index) => {
+                const found = BASE_MINOR_B_CELLS.some(baseCell => 
+                    JSON.stringify(baseCell) === JSON.stringify(cell)
+                );
+                console.log(`New B cell ${index + 1}: ${JSON.stringify(cell)} - ${found ? 'FOUND' : 'NOT FOUND'}`);
+            });
+            
+            console.log('Checking for new cells in BASE_MINOR_C_CELLS:');
+            const newCCells = [
+                ["E5","C5","G#4","E4","B4"],
+                ["E5","C5","G#4","F4","E4"],
+                ["E5","A#4","B4","D5","C5"],
+                ["D4", "C4", "G#3", "E3", "B3"],
+                ["D4", "C4", "G#3", "F3", "E3"]
+            ];
+            
+            newCCells.forEach((cell, index) => {
+                const found = BASE_MINOR_C_CELLS.some(baseCell => 
+                    JSON.stringify(baseCell) === JSON.stringify(cell)
+                );
+                console.log(`New C cell ${index + 1}: ${JSON.stringify(cell)} - ${found ? 'FOUND' : 'NOT FOUND'}`);
+            });
+            
+            console.log('=== END VERIFICATION ===');
+        });
+    </script>
 </body>
 </html> 
