@@ -49,6 +49,8 @@ const BASE_CELLS = [
     //7.20
     ["Bb4", "D4", "Db4", "D4", "A4"],
     ["Bb3", "F4", "D4", "Bb3", "A3"],
+    //7.24
+    ["F#4", "D4", "F4", "D4", "E4"],
 ];
 
 // Additional cells unique to CELLS2 (these are only in CELLS2, not in base CELLS)
