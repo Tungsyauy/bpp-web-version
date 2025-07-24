@@ -441,11 +441,11 @@ function updatePhraseDisplay() {
     if (showingPartialPhrase) {
         // Show partial phrase with rests (exactly like Python LilyPond)
         abcNotation = generateABCScore(currentPhraseData.phrase, true, currentPhraseData.phrase.length);
-        buttonText = "Show Full Phrase";
+        buttonText = "Show Full";
     } else {
         // Show full phrase
         abcNotation = generateABCScore(currentPhraseData.phrase, false, currentPhraseData.phrase.length);
-        buttonText = "Generate Next Phrase";
+        buttonText = "Generate Next";
     }
     
     console.log('ABC notation:', abcNotation);

@@ -1,4 +1,4 @@
-/* styles.css - Bebop Practice Program optimized for iPhone 13 Landscape */
+/* styles.css - Bebop Practice Program with Glassmorphism UI Design */
 
 * {
     margin: 0;
@@ -7,12 +7,23 @@
 }
 
 html, body {
-    /* Fixed viewport for iPhone 13 landscape: 844px × 390px */
-    width: 844px;
-    height: 390px;
+    /* Responsive viewport instead of fixed iPhone dimensions */
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Beautiful ultra-cold and dark gradient background */
+    background: linear-gradient(135deg, 
+        #000000 0%, 
+        #0a0a0a 15%, 
+        #0f0f23 30%, 
+        #1a1a3a 45%, 
+        #2d1b69 60%, 
+        #1e0b41 75%, 
+        #0a0a1a 90%, 
+        #000000 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     /* Comprehensive zoom/scaling prevention */
     touch-action: manipulation;
     -webkit-touch-callout: none;
@@ -28,6 +39,12 @@ html, body {
     user-zoom: fixed;
 }
 
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 body {
     display: flex;
     justify-content: center;
@@ -35,15 +52,30 @@ body {
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: 100vh;
+    min-width: 100vw;
 }
 
 .container {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    width: 804px;  /* 844px - 40px padding */
-    height: 350px; /* 390px - 40px padding */
+    /* Glassmorphism container with backdrop blur */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    padding: 30px;
+    /* Responsive sizing with max/min constraints */
+    width: min(90vw, 1200px);
+    height: min(90vh, 600px);
+    max-width: 1200px;
+    max-height: 600px;
+    min-width: 800px;
+    min-height: 400px;
     position: relative;
     overflow: hidden;
     /* Prevent zoom/scaling */
@@ -69,170 +101,341 @@ body {
 
 /* Typography */
 .title {
-    font-size: 32px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 30px;
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: clamp(45px, 8vh, 60px) !important;
     text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+    /* Glassmorphism text effect */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .screen-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 20px;
+    font-size: clamp(18px, 3vw, 24px);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: clamp(35px, 6vh, 45px);
     text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    /* Glassmorphism text effect */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-/* Button Styling - Optimized for landscape layout */
+/* Specific spacing for mode selection */
+#mode-screen .screen-title {
+    margin-bottom: clamp(45px, 8vh, 60px) !important;
+}
+
+/* Button Styling - Glassmorphism Design */
 .nav-btn {
-    background-color: #d0d0d0;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
+    /* Glassmorphism button with backdrop blur */
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: clamp(8px, 1.5vh, 12px) clamp(16px, 2.5vw, 20px);
+    font-size: clamp(14px, 2vw, 16px);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin: 6px;
-    min-width: 140px;
-    min-height: 36px;
-    max-width: 180px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: clamp(8px, 1vh, 12px);
+    min-width: clamp(140px, 18vw, 160px);
+    min-height: clamp(40px, 5vh, 44px);
+    max-width: clamp(160px, 20vw, 180px);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
 }
 
 .nav-btn:hover {
-    background-color: #c0c0c0;
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.nav-btn:hover::before {
+    left: 100%;
 }
 
 .nav-btn:active {
-    background-color: #b0b0b0;
-    transform: translateY(1px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(0);
 }
 
-/* Login Input Button Styling - White background with light grey text */
 .login-input-btn {
-    background-color: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #999;
+    /* Glassmorphism input button with different styling */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: clamp(8px, 1.5vh, 12px) clamp(16px, 2.5vw, 20px);
+    font-size: clamp(14px, 2vw, 16px);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin: 6px;
-    min-width: 140px;
-    min-height: 36px;
-    max-width: 180px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: clamp(8px, 1vh, 12px);
+    min-width: clamp(140px, 18vw, 160px);
+    min-height: clamp(40px, 5vh, 44px);
+    max-width: clamp(160px, 20vw, 180px);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-input-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
 }
 
 .login-input-btn:hover {
-    background-color: #f9f9f9;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.login-input-btn:hover::before {
+    left: 100%;
 }
 
 .login-input-btn:active {
-    background-color: #f0f0f0;
-    transform: translateY(1px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transform: translateY(0);
 }
 
-/* Button Containers - Centered layout */
 .button-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: clamp(12px, 2vh, 16px);
     justify-content: center;
     height: 100%;
 }
 
-/* Key Grid Layout - Compact for landscape and properly centered */
 .key-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    max-width: 520px; /* Adjusted for smaller screen */
-    width: 520px; /* Fixed width for proper centering */
-    margin: 0 auto; /* Center the grid horizontally */
+    gap: clamp(12px, 2vw, 16px);
+    max-width: min(90%, 520px);
+    width: min(90%, 520px);
+    margin: 0 auto;
     justify-content: center;
-    justify-items: center; /* Center each button within its grid cell */
+    justify-items: center;
+}
+
+.mode-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(12px, 2vh, 16px);
+    max-width: min(90%, 200px);
+    width: min(90%, 200px);
+    margin: 0 auto;
+    justify-content: center;
+    justify-items: center;
+}
+
+.welcome-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(12px, 2vh, 16px);
+    max-width: min(90%, 200px);
+    width: min(90%, 200px);
+    margin: 0 auto;
+    justify-content: center;
+    justify-items: center;
+}
+
+.length-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(12px, 2vh, 16px);
+    max-width: min(90%, 200px);
+    width: min(90%, 200px);
+    margin: 0 auto;
+    justify-content: center;
+    justify-items: center;
 }
 
 .key-btn {
-    min-width: 120px;
-    min-height: 36px;
-    font-size: 14px;
-    padding: 6px 12px;
+    min-width: clamp(110px, 14vw, 130px);
+    min-height: clamp(36px, 5vh, 40px);
+    font-size: clamp(12px, 1.5vw, 14px);
+    padding: clamp(6px, 1vh, 8px) clamp(10px, 1.5vw, 14px);
+    /* Glassmorphism key button */
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
 }
 
-/* Phrase Type Grid Layout - Compact with uniform button sizes and proper centering */
+.key-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.key-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.key-btn:hover::before {
+    left: 100%;
+}
+
+.key-btn:active {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(0);
+}
+
 .phrase-type-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    max-width: 440px; /* Reduced width for smaller screen */
-    width: 440px; /* Fixed width instead of 100% */
-    margin: 0 auto 15px auto; /* Center the grid horizontally */
+    gap: clamp(16px, 2.5vw, 20px);
+    max-width: min(90%, 480px);
+    width: min(90%, 480px);
+    margin: 0 auto clamp(20px, 3vh, 25px) auto;
     justify-content: center;
-    justify-items: center; /* Center each button within its grid cell */
+    justify-items: center;
 }
 
 .phrase-type-grid .nav-btn {
     /* Force all phrase type buttons to be the same size */
-    min-width: 140px;
-    max-width: 140px;
-    min-height: 36px;
-    max-height: 36px;
-    font-size: 12px; /* Smaller text to fit button */
-    padding: 6px 8px;
+    min-width: clamp(130px, 16vw, 150px);
+    max-width: clamp(150px, 18vw, 170px);
+    min-height: clamp(36px, 5vh, 40px);
+    max-height: clamp(40px, 5.5vh, 44px);
+    font-size: clamp(10px, 1.2vw, 12px);
+    padding: clamp(6px, 1vh, 8px) clamp(8px, 1.2vw, 10px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0;
 }
 
 .phrase-type-grid button:last-child {
-    grid-column: 2 / 3; /* Center the II7 to V7 button in middle column */
+    grid-column: 2 / 3;
     justify-self: center;
-    min-width: 140px;
-    max-width: 140px;
+    min-width: clamp(130px, 16vw, 150px);
+    max-width: clamp(150px, 18vw, 170px);
 }
 
-/* Chord Type Grid Layout - Compact and properly centered */
 .chord-type-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    max-width: 440px; /* Reduced width for smaller screen */
-    width: 440px; /* Fixed width instead of 100% */
-    margin: 0 auto 15px auto; /* Center the grid horizontally */
+    gap: clamp(16px, 2.5vw, 20px);
+    max-width: min(90%, 480px);
+    width: min(90%, 480px);
+    margin: 0 auto clamp(20px, 3vh, 25px) auto;
     justify-content: center;
-    justify-items: center; /* Center each button within its grid cell */
+    justify-items: center;
 }
 
 .chord-type-grid button:last-child {
-    grid-column: 2 / 3; /* Center the II7 to V7 button in middle column */
+    grid-column: 2 / 3;
     justify-self: center;
-    min-width: 140px;
-    max-width: 140px;
+    min-width: clamp(130px, 16vw, 150px);
+    max-width: clamp(150px, 18vw, 170px);
 }
 
-/* Return Arrow - Positioned for landscape */
 .return-arrow {
     position: absolute;
-    bottom: 15px;
-    right: 15px;
-    width: 32px;
-    height: 32px;
-    background-color: #d0d0d0;
-    border-radius: 4px;
+    bottom: clamp(10px, 1.5vh, 15px);
+    right: clamp(10px, 1.5vw, 15px);
+    width: clamp(28px, 4vw, 32px);
+    height: clamp(28px, 4vw, 32px);
+    /* Glassmorphism return arrow */
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
     /* Prevent zoom/scaling on touch */
     touch-action: manipulation;
     -webkit-touch-callout: none;
@@ -240,43 +443,57 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* CSS Triangle - identical on all devices */
 .triangle-left {
     width: 0;
     height: 0;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-right: 8px solid #333;
+    border-top: clamp(5px, 0.8vw, 6px) solid transparent;
+    border-bottom: clamp(5px, 0.8vw, 6px) solid transparent;
+    border-right: clamp(7px, 1vw, 8px) solid rgba(255, 255, 255, 0.9);
     display: inline-block;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
 .return-arrow:hover {
-    background-color: #c0c0c0;
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
 
-/* Footer - Compact */
+.return-arrow:active {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(0);
+}
+
 .footer {
     position: absolute;
-    bottom: 15px;
-    left: 15px;
+    bottom: clamp(10px, 1.5vh, 15px);
+    left: clamp(10px, 1.5vw, 15px);
+    text-align: left;
 }
 
 .attribution {
-    color: #666;
-    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: clamp(8px, 1vw, 10px);
     line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .attribution p {
     margin: 0;
 }
 
-/* Phrase Generator Screen - CENTERED STAFF LAYOUT */
 #phrase-generator-screen {
     justify-content: center;
     align-items: center;
     height: 100%;
-    padding: 15px;
+    padding: clamp(10px, 1.5vh, 15px);
     position: relative;
 }
 
@@ -295,19 +512,22 @@ body {
 }
 
 .notation-container {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 12px;
-    min-height: 100px;
-    max-height: 130px;
+    /* Glassmorphism notation container */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: clamp(8px, 1.5vh, 12px);
+    margin-bottom: clamp(8px, 1.5vh, 12px);
+    min-height: clamp(80px, 15vh, 100px);
+    max-height: clamp(100px, 20vh, 130px);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 700px;
+    max-width: min(90%, 700px);
     /* CENTERED BOTH HORIZONTALLY AND VERTICALLY */
     position: relative;
     /* Comprehensive scaling prevention */
@@ -323,6 +543,9 @@ body {
     -webkit-text-size-adjust: none;
     -ms-text-size-adjust: none;
     text-size-adjust: none;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .notation-container svg {
@@ -335,50 +558,98 @@ body {
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
     pointer-events: none;
+    /* Make notation white for glassmorphism background */
+    filter: brightness(0) invert(1) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
 
 .key-display {
-    font-size: 14px;
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 10px;
+    font-size: clamp(12px, 2vw, 14px);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: clamp(6px, 1vh, 10px);
     text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
 }
 
 .controls {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
-    margin-top: 15px;
+    gap: clamp(10px, 2vw, 15px);
+    margin-top: clamp(10px, 2vh, 15px);
     position: absolute;
-    bottom: 20px;
+    bottom: clamp(15px, 2vh, 20px);
     left: 50%;
     transform: translateX(-50%);
     width: auto;
+    padding: clamp(8px, 1.5vh, 10px);
+    /* Glassmorphism controls container */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .action-btn {
-    background-color: #d0d0d0; /* Changed from green to gray to match other buttons */
-    color: #333; /* Changed from white to dark text */
-    border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: bold;
+    /* Glassmorphism action button */
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: clamp(8px, 1.5vh, 12px) clamp(16px, 2.5vw, 20px);
+    font-size: clamp(12px, 1.5vw, 14px);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    min-width: 100px;
-    min-height: 32px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: clamp(140px, 18vw, 160px);
+    min-height: clamp(40px, 5vh, 44px);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
 }
 
 .action-btn:hover {
-    background-color: #c0c0c0; /* Darker gray on hover */
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.action-btn:hover::before {
+    left: 100%;
 }
 
 .action-btn:active {
-    background-color: #b0b0b0; /* Even darker gray when pressed */
-    transform: translateY(1px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(0);
 }
 
 .hidden {
@@ -396,13 +667,15 @@ body {
 
 .loading {
     display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #333;
+    width: clamp(14px, 2vw, 16px);
+    height: clamp(14px, 2vw, 16px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top: 2px solid rgba(255, 255, 255, 0.9);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-left: 8px;
+    margin-left: clamp(6px, 1vw, 8px);
+    box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes spin {
@@ -411,14 +684,18 @@ body {
 }
 
 .action-btn:disabled, .nav-btn:disabled {
-    background-color: #cccccc;
+    opacity: 0.5;
     cursor: not-allowed;
-    opacity: 0.6;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .action-btn:disabled:hover, .nav-btn:disabled:hover {
-    background-color: #cccccc;
     transform: none;
+    box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .abcjs-inline-audio {
@@ -431,12 +708,18 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 70px;
+    min-height: clamp(50px, 10vh, 70px);
     /* Prevent scaling on touch/click */
     touch-action: manipulation;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
 }
 
 .notation-container .abcjs-container svg {
@@ -450,11 +733,19 @@ body {
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
     pointer-events: none;
+    /* Make notation white for glassmorphism background */
+    filter: brightness(0) invert(1) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
 
 .notation-container .abcjs-container .abcjs-paper {
     margin: 0 auto;
     display: block;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
 }
 
 /* Force notation centering */
@@ -462,10 +753,17 @@ body {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
 }
 
 .notation-container #notation .abcjs-container > * {
     margin: 0 auto !important;
+    background: transparent;
 }
 
 .notation-container #notation {
@@ -473,13 +771,19 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 70px;
+    min-height: clamp(50px, 10vh, 70px);
     position: relative;
     /* Prevent scaling on touch/click */
     touch-action: manipulation;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
 }
 
 /* Additional centering for ABC.js */
@@ -487,21 +791,85 @@ body {
     margin: 0 auto !important;
     display: block !important;
     text-align: center !important;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
 }
 
 .error-message {
-    color: #d32f2f;
-    background-color: #ffebee;
-    border: 1px solid #f8bbd9;
-    border-radius: 4px;
-    padding: 8px 12px;
-    margin: 10px 0;
-    font-size: 12px;
+    /* Glassmorphism error message */
+    background: rgba(255, 107, 107, 0.2);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    color: rgba(255, 255, 255, 0.95);
+    padding: clamp(6px, 1vh, 8px) clamp(8px, 1.5vw, 12px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    margin: clamp(6px, 1vh, 10px) 0;
+    font-size: clamp(10px, 1.5vw, 12px);
     text-align: center;
     animation: fadeIn 0.3s ease-in;
     max-width: 100%;
     box-sizing: border-box;
+    box-shadow: 
+        0 4px 15px rgba(255, 107, 107, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
 }
 
-/* Remove all responsive media queries - Fixed size only */
-/* NO RESPONSIVE BEHAVIOR - FIXED IPHONE 13 LANDSCAPE SIZE */ 
+/* Responsive breakpoints for different screen sizes */
+@media (max-width: 768px) {
+    .container {
+        width: 95vw;
+        height: 95vh;
+        min-width: 300px;
+        min-height: 300px;
+    }
+    
+    .key-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 95%;
+    }
+    
+    .phrase-type-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 95%;
+    }
+    
+    .chord-type-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 95%;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 98vw;
+        height: 98vh;
+        padding: 10px;
+    }
+    
+    .key-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    
+    .phrase-type-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    .chord-type-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    .phrase-type-grid button:last-child,
+    .chord-type-grid button:last-child {
+        grid-column: 1;
+    }
+} 
