@@ -517,13 +517,23 @@ function renderABCNotation(abcNotation) {
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         
-        // Calculate responsive parameters based on orientation
+        // Detect if we're on PC (no orientation property) or mobile
+        const isPC = typeof window.orientation === 'undefined';
+        
+        // Calculate responsive parameters based on device and orientation
         let staffwidth, scale, padding;
-        if (isLandscape) {
+        if (isPC) {
+            // PC settings - use fixed parameters for consistent display
+            staffwidth = 600;
+            scale = 1.0;
+            padding = 40;
+        } else if (isLandscape) {
+            // Mobile landscape
             staffwidth = Math.min(viewportWidth * 0.8, 600);
             scale = 1.2;
             padding = 20;
         } else {
+            // Mobile portrait
             staffwidth = Math.min(viewportWidth * 0.9, 400);
             scale = 1.0;
             padding = 15;
@@ -558,7 +568,7 @@ function renderABCNotation(abcNotation) {
             wrap: {
                 minSpacing: 1.6,
                 maxSpacing: 2.4,
-                preferredMeasuresPerLine: isLandscape ? 16 : 12
+                preferredMeasuresPerLine: isPC ? 16 : (isLandscape ? 16 : 12)
             }
         });
         
