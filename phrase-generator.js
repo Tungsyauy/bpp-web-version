@@ -29,32 +29,31 @@ function isPhraseInRange(phrase) {
 function adjustPhraseOctave(phrase) {
     console.log('Adjusting phrase octave for:', phrase);
     
-    // Calculate average pitch of the phrase
-    let totalPitch = 0;
-    let validNotes = 0;
+    // Check if any note is out of range
+    let hasHighNotes = false;
+    let hasLowNotes = false;
     
     for (const note of phrase) {
         const [pitchClass, octave] = noteToPitch(note);
         if (pitchClass !== undefined && octave !== undefined) {
-            totalPitch += pitchClass + (octave * 12);
-            validNotes++;
+            const absolutePitch = pitchClass + (octave * 12);
+            if (absolutePitch > C5_PITCH) {
+                hasHighNotes = true;
+            }
+            if (absolutePitch < F3_PITCH) {
+                hasLowNotes = true;
+            }
         }
     }
     
-    if (validNotes === 0) return phrase;
-    
-    const averagePitch = totalPitch / validNotes;
-    const targetPitch = (F3_PITCH + C5_PITCH) / 2; // Middle of our range
-    console.log(`Average pitch: ${averagePitch}, target: ${targetPitch}`);
-    
-    // If phrase is too high, transpose down by octaves
+    // Determine octave shift based on out-of-range notes
     let octaveShift = 0;
-    if (averagePitch > C5_PITCH + 6) { // If clearly too high
+    if (hasHighNotes) {
         octaveShift = -1;
-        console.log('Phrase too high, transposing down 1 octave');
-    } else if (averagePitch < F3_PITCH - 6) { // If clearly too low
+        console.log('Phrase has high notes, transposing down 1 octave');
+    } else if (hasLowNotes) {
         octaveShift = 1;
-        console.log('Phrase too low, transposing up 1 octave');
+        console.log('Phrase has low notes, transposing up 1 octave');
     }
     
     if (octaveShift === 0) return phrase;
@@ -621,11 +620,17 @@ function generateTurnaroundPhrase(keyName) {
 
 // Generate rhythm changes 5-6 phrase - EXACT MATCH TO PYTHON
 function generateRhythmChanges56Phrase(keyName) {
+    console.log('generateRhythmChanges56Phrase called with keyName:', keyName);
+    console.log('DFB cells available:', window.DFB ? window.DFB.length : 'undefined');
+    console.log('CELLS_up5 cells available:', window.CELLS_up5 ? window.CELLS_up5.length : 'undefined');
+    console.log('CELLS cells available:', CELLS ? CELLS.length : 'undefined');
+    
     const maxAttempts = 100;
     let attempts = 0;
     
     while (attempts < maxAttempts) {
         let resolutionCell = resolutionCycler.nextItem();  // From DFB
+        console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
         let phrase = resolutionCell;
         const cellSets = [window.CELLS_up5, CELLS, CELLS];
         let validPhrase = true;
@@ -643,17 +648,23 @@ function generateRhythmChanges56Phrase(keyName) {
             const cellSet = cellSets[i];
             const cellSetName = i === 0 ? 'CELLS_up5' : 'CELLS';
             const firstNoteCurrent = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in', cellSetName);
+            
             const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
+            console.log('Found', compatibleCells.length, 'compatible cells in', cellSetName);
             
             if (compatibleCells.length === 0) {
+                console.log('No compatible cells found, breaking');
                 validPhrase = false;
                 break;
             }
             
             // Filter out cells that have already been used within this specific cell set
             const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            console.log('Found', unusedCompatibleCells.length, 'unused compatible cells in', cellSetName);
             
             if (unusedCompatibleCells.length === 0) {
+                console.log('No unused compatible cells found, breaking');
                 validPhrase = false;
                 break;
             }
@@ -662,9 +673,11 @@ function generateRhythmChanges56Phrase(keyName) {
             usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+            console.log('Added cell, phrase length now:', phrase.length);
         }
         
         if (validPhrase && phrase.length === 17) {
+            console.log('Successfully generated rhythm changes 5-6 phrase:', phrase);
             return { phrase: phrase, length: phrase.length };
         }
         
@@ -672,6 +685,7 @@ function generateRhythmChanges56Phrase(keyName) {
         resolutionCycler.resetPermutation();
     }
     
+    console.error('Failed to generate rhythm changes 5-6 phrase after', maxAttempts, 'attempts');
     throw new Error("Failed to generate a valid rhythm_changes_56 phrase after maximum attempts");
 }
 

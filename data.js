@@ -615,6 +615,13 @@ const random_key_cycler = window.random_key_cycler;
 // Make KEYS globally accessible for browser environment
 window.KEYS = KEYS;
 
+// Initialize transposed cells when the page loads
+if (typeof window !== 'undefined') {
+    // Initialize transposed cells immediately
+    initializeTransposedCells();
+    console.log('Transposed cells initialized on page load');
+}
+
 // Export everything for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
