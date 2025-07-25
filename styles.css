@@ -383,6 +383,24 @@ body {
     }
 }
 
+/* Portrait mode - use landscape button sizing */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+    .phrase-type-grid {
+        max-width: min(90%, 400px);
+        width: min(90%, 400px);
+    }
+    .phrase-type-grid .nav-btn {
+        min-width: clamp(130px, 16vw, 150px);
+        max-width: clamp(150px, 18vw, 170px);
+        font-size: clamp(10px, 1.2vw, 12px);
+        padding: clamp(6px, 1vh, 8px) clamp(8px, 1.2vw, 10px);
+    }
+    .phrase-type-grid button:last-child {
+        min-width: clamp(130px, 16vw, 150px);
+        max-width: clamp(150px, 18vw, 170px);
+    }
+}
+
 .phrase-type-grid .nav-btn {
     /* Match key button exactly */
     min-width: clamp(110px, 14vw, 130px);
@@ -992,6 +1010,43 @@ body {
     /* Move button up a little in portrait mode to avoid clashing with email */
     .controls {
         bottom: clamp(35px, 4vh, 45px);
+    }
+    
+    /* Portrait mode phrase type buttons - use landscape sizing */
+    .phrase-type-grid .nav-btn {
+        min-width: clamp(130px, 16vw, 150px) !important;
+        max-width: clamp(150px, 18vw, 170px) !important;
+        font-size: clamp(10px, 1.2vw, 12px) !important;
+        padding: clamp(6px, 1vh, 8px) clamp(8px, 1.2vw, 10px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin: 0 !important;
+    }
+    
+    /* Portrait mode phrase type grid - vertical layout with landscape button size */
+    .phrase-type-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        max-width: 300px !important;
+        width: 300px !important;
+        margin: 0 auto !important;
+        justify-content: center !important;
+        justify-items: center !important;
+        align-items: center !important;
+    }
+    
+    /* Portrait mode last child - vertical layout */
+    .phrase-type-grid button:last-child {
+        grid-column: 1 !important;
+        justify-self: center !important;
+        min-width: clamp(130px, 16vw, 150px) !important;
+        max-width: clamp(150px, 18vw, 170px) !important;
     }
 }
 
