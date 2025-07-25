@@ -520,24 +520,27 @@ function renderABCNotation(abcNotation) {
         // Detect if we're on PC (no orientation property) or mobile
         const isPC = typeof window.orientation === 'undefined';
         
-        // Calculate responsive parameters based on device and orientation
+        // Use original working parameters with device detection
         let staffwidth, scale, padding;
         if (isPC) {
-            // PC settings - use fixed parameters for consistent display
-            staffwidth = 600;
+            // PC: Use original working parameters
+            staffwidth = 450;
             scale = 1.0;
             padding = 40;
         } else if (isLandscape) {
-            // Mobile landscape
-            staffwidth = Math.min(viewportWidth * 0.8, 600);
-            scale = 1.2;
+            // Mobile landscape: Use original working parameters
+            staffwidth = 450;
+            scale = 1.0;
             padding = 20;
         } else {
-            // Mobile portrait
-            staffwidth = Math.min(viewportWidth * 0.9, 400);
+            // Mobile portrait: Use original working parameters
+            staffwidth = 400;
             scale = 1.0;
             padding = 15;
         }
+        
+        // Use fixed measures per line like the original version
+        const measuresPerLine = 16;
         
         // Render the ABC notation with responsive parameters
         ABCJS.renderAbc(notationDiv, abcNotation, {
@@ -568,7 +571,7 @@ function renderABCNotation(abcNotation) {
             wrap: {
                 minSpacing: 1.6,
                 maxSpacing: 2.4,
-                preferredMeasuresPerLine: isPC ? 16 : (isLandscape ? 16 : 12)
+                preferredMeasuresPerLine: measuresPerLine
             }
         });
         

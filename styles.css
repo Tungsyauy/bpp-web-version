@@ -366,22 +366,29 @@ body {
 .phrase-type-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: clamp(16px, 2.5vw, 20px);
-    max-width: min(90%, 480px);
-    width: min(90%, 480px);
-    margin: 0 auto clamp(20px, 3vh, 25px) auto;
+    gap: clamp(12px, 2vw, 16px);
+    max-width: min(90%, 520px);
+    width: min(90%, 520px);
+    margin: 0 auto;
     justify-content: center;
     justify-items: center;
 }
 
+/* PC mode - more sparse spacing */
+@media screen and (min-width: 769px) {
+    .phrase-type-grid {
+        gap: clamp(20px, 3vw, 30px);
+        max-width: min(90%, 600px);
+        width: min(90%, 600px);
+    }
+}
+
 .phrase-type-grid .nav-btn {
-    /* Force all phrase type buttons to be the same size */
-    min-width: clamp(130px, 16vw, 150px);
-    max-width: clamp(150px, 18vw, 170px);
+    /* Match key button exactly */
+    min-width: clamp(110px, 14vw, 130px);
     min-height: clamp(36px, 5vh, 40px);
-    max-height: clamp(40px, 5.5vh, 44px);
-    font-size: clamp(10px, 1.2vw, 12px);
-    padding: clamp(6px, 1vh, 8px) clamp(8px, 1.2vw, 10px);
+    font-size: clamp(12px, 1.5vw, 14px);
+    padding: clamp(6px, 1vh, 8px) clamp(10px, 1.5vw, 14px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -394,8 +401,7 @@ body {
 .phrase-type-grid button:last-child {
     grid-column: 2 / 3;
     justify-self: center;
-    min-width: clamp(130px, 16vw, 150px);
-    max-width: clamp(150px, 18vw, 170px);
+    min-width: clamp(110px, 14vw, 130px);
 }
 
 .chord-type-grid {
@@ -919,6 +925,18 @@ body {
         max-width: 90%;
     }
     
+    .phrase-type-grid .nav-btn {
+        min-width: clamp(130px, 16vw, 150px);
+        max-width: clamp(150px, 18vw, 170px);
+        font-size: clamp(10px, 1.2vw, 12px);
+        padding: clamp(6px, 1vh, 8px) clamp(8px, 1.2vw, 10px);
+    }
+    
+    .phrase-type-grid button:last-child {
+        min-width: clamp(130px, 16vw, 150px);
+        max-width: clamp(150px, 18vw, 170px);
+    }
+    
     .chord-type-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: clamp(8px, 1.5vw, 12px);
@@ -927,14 +945,15 @@ body {
 }
 
 /* Orientation change specific rules for notation stability */
-@media screen and (orientation: landscape) {
+@media screen and (orientation: landscape) and (max-width: 768px) {
     .notation-container {
-        min-height: clamp(60px, 12vh, 80px);
-        max-height: clamp(80px, 15vh, 100px);
+        min-height: clamp(80px, 15vh, 120px);
+        max-height: clamp(120px, 20vh, 160px);
+        transform: translateY(-35px);
     }
     
     .notation-container .abcjs-container {
-        min-height: clamp(40px, 8vh, 60px);
+        min-height: clamp(60px, 12vh, 100px);
     }
     
     .notation-container .abcjs-container svg {
@@ -942,6 +961,14 @@ body {
         height: auto;
         transform: none;
         transition: none;
+    }
+    
+    /* Move key display text closer to staff picture in landscape mode */
+    .key-display {
+        margin-bottom: 0;
+        margin-top: -20px;
+        position: relative;
+        top: -10px;
     }
 }
 
@@ -960,6 +987,24 @@ body {
         height: auto;
         transform: none;
         transition: none;
+    }
+    
+    /* Move button up a little in portrait mode to avoid clashing with email */
+    .controls {
+        bottom: clamp(35px, 4vh, 45px);
+    }
+}
+
+/* PC/Desktop specific notation container adjustments */
+@media screen and (min-width: 769px) {
+    .notation-container {
+        min-height: clamp(100px, 18vh, 140px);
+        max-height: clamp(140px, 25vh, 180px);
+        transform: translateY(-15px);
+    }
+    
+    .notation-container .abcjs-container {
+        min-height: clamp(80px, 15vh, 120px);
     }
 }
 
