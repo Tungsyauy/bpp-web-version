@@ -19,6 +19,27 @@ let currentPhraseData = null;
 let currentPhraseType = null;
 let showingPartialPhrase = true;
 
+// Add orientation change handling
+let currentOrientation = window.orientation || 0;
+let notationRendered = false;
+
+function handleOrientationChange() {
+    const newOrientation = window.orientation || 0;
+    if (newOrientation !== currentOrientation) {
+        currentOrientation = newOrientation;
+        console.log('Orientation changed to:', newOrientation);
+        
+        // Re-render notation if it's currently displayed
+        if (notationRendered && currentPhraseData) {
+            // Longer delay to ensure orientation change is complete
+            setTimeout(() => {
+                console.log('Re-rendering notation after orientation change');
+                updatePhraseDisplay();
+            }, 300); // Increased delay for better stability
+        }
+    }
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
@@ -71,6 +92,14 @@ function preventZoomAndScaling() {
 
 function initializeApp() {
     setupEventListeners();
+    
+    // Add orientation change event listeners
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+    
+    // Initialize orientation detection
+    currentOrientation = window.orientation || 0;
+    
     showScreen('welcome');
 }
 
@@ -429,6 +458,9 @@ function updatePhraseDisplay() {
     console.log('Current phrase data:', currentPhraseData);
     console.log('Showing partial phrase:', showingPartialPhrase);
     
+    // Reset notation rendered flag
+    notationRendered = false;
+    
     if (!currentPhraseData) {
         console.error('No phrase data available');
         return;
@@ -480,20 +512,37 @@ function renderABCNotation(abcNotation) {
         // Clear previous content
         notationDiv.innerHTML = '';
         
-        // Render the ABC notation optimized for iPhone 13 landscape
+        // Get current orientation and viewport dimensions
+        const isLandscape = window.orientation === 90 || window.orientation === -90;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        // Calculate responsive parameters based on orientation
+        let staffwidth, scale, padding;
+        if (isLandscape) {
+            staffwidth = Math.min(viewportWidth * 0.8, 600);
+            scale = 1.2;
+            padding = 20;
+        } else {
+            staffwidth = Math.min(viewportWidth * 0.9, 400);
+            scale = 1.0;
+            padding = 15;
+        }
+        
+        // Render the ABC notation with responsive parameters
         ABCJS.renderAbc(notationDiv, abcNotation, {
             responsive: "resize",
-            scale: 1.0,  // Reduced scale for iPhone 13
-            staffwidth: 450,  // Reduced width for iPhone 13 landscape
-            paddingleft: 40,   // Reduced padding
-            paddingright: 40,  // Reduced padding
-            paddingtop: 15,
-            paddingbottom: 15,
+            scale: scale,
+            staffwidth: staffwidth,
+            paddingleft: padding,
+            paddingright: padding,
+            paddingtop: padding,
+            paddingbottom: padding,
             viewportHorizontal: true,
             viewportVertical: true,
             add_classes: true,
             format: {
-                titlefont: "serif 14",  // Smaller fonts for iPhone 13
+                titlefont: "serif 14",
                 gchordfont: "serif 10",
                 vocalfont: "serif 11",
                 annotationfont: "serif 10",
@@ -509,7 +558,7 @@ function renderABCNotation(abcNotation) {
             wrap: {
                 minSpacing: 1.6,
                 maxSpacing: 2.4,
-                preferredMeasuresPerLine: 16
+                preferredMeasuresPerLine: isLandscape ? 16 : 12
             }
         });
         
@@ -600,6 +649,7 @@ function renderABCNotation(abcNotation) {
         }, 100);
         
         console.log('ABC notation rendered successfully');
+        notationRendered = true; // Mark notation as rendered
     } catch (error) {
         console.error('Error rendering ABC notation:', error);
         notationDiv.innerHTML = '<p>Error rendering musical notation</p>';

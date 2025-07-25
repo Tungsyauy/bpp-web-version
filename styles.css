@@ -546,6 +546,10 @@ body {
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    /* Orientation change stability */
+    transition: none;
+    transform: none;
+    will-change: auto;
 }
 
 .notation-container svg {
@@ -720,6 +724,10 @@ body {
     padding: 0;
     margin: 0;
     box-shadow: none;
+    /* Orientation change stability */
+    transition: none;
+    transform: none;
+    will-change: auto;
 }
 
 .notation-container .abcjs-container svg {
@@ -872,4 +880,104 @@ body {
     .chord-type-grid button:last-child {
         grid-column: 1;
     }
+}
+
+/* iPhone Portrait Mode - Adjust vertical positioning */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+    body {
+        align-items: flex-start;
+        padding-top: 10vh;
+    }
+    
+    .container {
+        margin-top: 0;
+        transform: translateY(-5vh);
+    }
+}
+
+/* Landscape Mode Override - Ensure proper button spacing */
+@media screen and (orientation: landscape) {
+    body {
+        align-items: center;
+        padding-top: 0;
+    }
+    
+    .container {
+        margin-top: 0;
+        transform: none;
+    }
+    
+    .key-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(8px, 1.5vw, 12px);
+        max-width: 90%;
+    }
+    
+    .phrase-type-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(8px, 1.5vw, 12px);
+        max-width: 90%;
+    }
+    
+    .chord-type-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(8px, 1.5vw, 12px);
+        max-width: 90%;
+    }
+}
+
+/* Orientation change specific rules for notation stability */
+@media screen and (orientation: landscape) {
+    .notation-container {
+        min-height: clamp(60px, 12vh, 80px);
+        max-height: clamp(80px, 15vh, 100px);
+    }
+    
+    .notation-container .abcjs-container {
+        min-height: clamp(40px, 8vh, 60px);
+    }
+    
+    .notation-container .abcjs-container svg {
+        max-width: 100%;
+        height: auto;
+        transform: none;
+        transition: none;
+    }
+}
+
+@media screen and (orientation: portrait) {
+    .notation-container {
+        min-height: clamp(80px, 15vh, 100px);
+        max-height: clamp(100px, 20vh, 130px);
+    }
+    
+    .notation-container .abcjs-container {
+        min-height: clamp(50px, 10vh, 70px);
+    }
+    
+    .notation-container .abcjs-container svg {
+        max-width: 100%;
+        height: auto;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* Prevent any scaling during orientation changes */
+.notation-container * {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+}
+
+/* Force consistent sizing for SVG elements */
+.notation-container svg,
+.notation-container .abcjs-container svg {
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
 } 
