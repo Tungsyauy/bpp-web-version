@@ -210,7 +210,6 @@ function generateABCScore(phrase, partial = false, phraseLength = 9) {
     // Generate ABC notation string
     const abcNotation = `X:1
 L:1/8
-M:4/4
 K:C
 ${abcNotes}`;
     
