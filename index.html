@@ -144,7 +144,7 @@
         </div>
     </div>
     
-    <script src="data.js?v=1.1"></script>
+    <script src="data.js?v=1.3"></script>
     <script src="music-utils.js?v=1.1"></script>
     <script src="phrase-generator.js?v=1.3"></script>
     <script src="app.js?v=1.5"></script>
@@ -159,23 +159,37 @@
             console.log('MINOR_C_CELLS length:', MINOR_C_CELLS.length);
             
             // Check if the new cells are present
-            console.log('Checking for new cells in BASE_MINOR_B_CELLS:');
-            const newBCells = [
-                ["G4", "F#4", "F4", "A4", "E4"],
-                ["F4", "G4", "A4", "C5", "E5"],
-                ["D4", "F4", "A4", "C5", "E5"],
-                ["G4","F#4","F4","E4","D4"],
-                ["F4","C4","C#4","E4","D4"],
-                ["A4","C5","C#5","E5","D5"],
-                ["E4","F4","C#4","E4","D4"]
+            console.log('Checking for transposed BASE_CELLS in BASE_MINOR_B_CELLS:');
+            // These are some examples of BASE_CELLS transposed down a perfect fourth (-5 semitones)
+            const transposedBaseCells = [
+                ["F4", "A3", "C4", "C#4", "E4"],  // ["Bb4", "D4", "F4", "F#4", "A4"] transposed down 5
+                ["A3", "C4", "D4", "A3", "F3"],   // ["D4", "F4", "E4", "D4", "C4"] transposed down 5
+                ["E4", "D4", "C4", "D4", "F4"],   // ["A4", "G4", "F#4", "G4", "C5"] transposed down 5
+                ["A3", "D4", "F4", "A4", "F3"],   // ["E4", "G4", "Bb4", "D5", "C5"] transposed down 5
+                ["F4", "E3", "F3", "E4", "D4"]    // ["C5", "B4", "Bb4", "A4", "G4"] transposed down 5
             ];
             
-            newBCells.forEach((cell, index) => {
+            transposedBaseCells.forEach((cell, index) => {
                 const found = BASE_MINOR_B_CELLS.some(baseCell => 
                     JSON.stringify(baseCell) === JSON.stringify(cell)
                 );
-                console.log(`New B cell ${index + 1}: ${JSON.stringify(cell)} - ${found ? 'FOUND' : 'NOT FOUND'}`);
+                console.log(`Transposed BASE_CELL ${index + 1}: ${JSON.stringify(cell)} - ${found ? 'FOUND' : 'NOT FOUND'}`);
             });
+            
+            // Check the total count (after filtering out cells starting with 'A')
+            console.log(`BASE_MINOR_B_CELLS should have ${BASE_MINOR_B_CELLS_ORIGINAL.length + BASE_CELLS.length} cells before filtering`);
+            console.log(`Actual BASE_MINOR_B_CELLS count: ${BASE_MINOR_B_CELLS.length}`);
+            console.log(`MINOR_B_CELLS count: ${MINOR_B_CELLS.length}`);
+            
+            // Check that no cells start with 'A'
+            const cellsStartingWithA = BASE_MINOR_B_CELLS.filter(cell => cell[0].startsWith('A'));
+            console.log(`Cells starting with 'A': ${cellsStartingWithA.length} (should be 0)`);
+            if (cellsStartingWithA.length === 0) {
+                console.log('✅ No cells starting with "A" found - filtering successful!');
+            } else {
+                console.log('❌ Found cells starting with "A" - filtering failed!');
+                console.log('Cells starting with "A":', cellsStartingWithA);
+            }
             
             console.log('Checking for new cells in BASE_MINOR_C_CELLS:');
             const newCCells = [

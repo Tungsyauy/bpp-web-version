@@ -130,8 +130,8 @@ const BASE_MAJOR_RESOLUTION_CELLS = [
     ["Ab4", "E5", "Eb5", "Db5", "C5"],
 ];
 
-// Base cells for minor phrases
-const BASE_MINOR_B_CELLS = [
+// Base cells for minor phrases (original cells)
+const BASE_MINOR_B_CELLS_ORIGINAL = [
     ["D4", "C4", "B3", "A3", "G#3"],
     ["B3", "D4", "F4", "A4", "G#4"],
     ["B4", "D4", "F4", "A4", "G#4"],
@@ -139,21 +139,24 @@ const BASE_MINOR_B_CELLS = [
     ["F4", "D4", "B3", "A3", "G#3"],
     ["B4", "F4", "A4", "G4", "G#4"],
     //7.12
-    ["G4", "F#4", "F4", "A4", "E4"],
-    ["F4", "G4", "A4", "C5", "E5"],
-    ["D4", "F4", "A4", "C5", "E5"],
+    //["G4", "F#4", "F4", "G4", "E4"],
+    //["F4", "G4", "A4", "C5", "E5"],
+    //["D4", "F4", "A4", "C5", "E5"],
 
-    ["F4", "E4", "D4", "C4", "B3"],
-    ["F4", "G4", "A4", "C5", "B4"],
-    ["D4", "A3", "C4", "A3", "B3"],
-    ["A3", "C4", "A3", "A#3", "B3"],
+    //["F4", "E4", "D4", "C4", "B3"],
+    //["F4", "G4", "A4", "C5", "B4"],
+    //["D4", "A3", "C4", "A3", "B3"],
+    //["A3", "C4", "A3", "A#3", "B3"],
 
-    ["G4","F#4","F4","E4","D4"],
-    ["F4","C4","C#4","E4","D4"],
-    ["A4","C5","C#5","E5","D5"],
-    ["E4","F4","C#4","E4","D4"],
+    //["G4","F#4","F4","E4","D4"],
+    //["F4","C4","C#4","E4","D4"],
+    //["A4","C5","C#5","E5","D5"],
+    //["E4","F4","C#4","E4","D4"],
 
 ];
+
+// Base cells for minor phrases (will be initialized with original + BASE_CELLS down a perfect fourth)
+let BASE_MINOR_B_CELLS = [...BASE_MINOR_B_CELLS_ORIGINAL];
 
 const BASE_MINOR_C_CELLS = [
     ["G#4", "F4", "E4", "D4", "C4"],
@@ -172,7 +175,15 @@ const BASE_MINOR_C_CELLS = [
 
     ["D4", "C4", "G#3", "E3", "B3"],
     ["D4", "C4", "G#3", "F3", "E3"],
+    //7.31
+    ["F5","G5","E5","D5","C5"],
+    ["G5","F5","E5","D5","C5"],
 
+    ["G5","F5","C5","G#4","E5"],
+    ["G5","F5","C5","D5","E5"],
+
+    ["C5","G#4","G4","F4","E4"],
+    ["C5","G#4","F4","D4","E4"],
 ];
 
 // Base turnaround cells
@@ -212,7 +223,8 @@ window.CELLS2 = [...BASE_CELLS, ...BASE_CELLS2_ADDITIONAL];
 window.CELLS2_ADDITIONAL = [...BASE_CELLS2_ADDITIONAL];
 window.MAJOR_CELLS = [...BASE_MAJOR_CELLS];
 window.MAJOR_RESOLUTION_CELLS = [...BASE_MAJOR_RESOLUTION_CELLS];
-window.MINOR_B_CELLS = [...BASE_MINOR_B_CELLS];
+// MINOR_B_CELLS will be updated in initializeTransposedCells() to include transposed BASE_CELLS
+window.MINOR_B_CELLS = [...BASE_MINOR_B_CELLS_ORIGINAL];
 window.MINOR_C_CELLS = [...BASE_MINOR_C_CELLS];
 window.TURNAROUND_CELLS_1 = [...BASE_TURNAROUND_CELLS_1];
 window.DFB = [...BASE_DFB];
@@ -260,6 +272,27 @@ function initializeTransposedCells() {
     window.CELLS_down5 = filterCellsStartingWith(transposeCells(BASE_CELLS, -5, "C"), "F");
     console.log('CELLS_down5 generated:', window.CELLS_down5.length, 'cells');
     
+    // Update BASE_MINOR_B_CELLS to include BASE_CELLS transposed down a perfect fourth
+    console.log('Updating BASE_MINOR_B_CELLS with BASE_CELLS down a perfect fourth...');
+    const baseCellsDownPerfectFourth = transposeCells(BASE_CELLS, -5, "C");
+    BASE_MINOR_B_CELLS = [...BASE_MINOR_B_CELLS_ORIGINAL, ...baseCellsDownPerfectFourth];
+    console.log('BASE_MINOR_B_CELLS updated:', BASE_MINOR_B_CELLS.length, 'cells total');
+    
+    // Filter out cells that start with 'A'
+    console.log('Filtering out cells that start with "A"...');
+    const originalCount = BASE_MINOR_B_CELLS.length;
+    BASE_MINOR_B_CELLS = BASE_MINOR_B_CELLS.filter(cell => !cell[0].startsWith('A'));
+    const filteredCount = BASE_MINOR_B_CELLS.length;
+    console.log(`Filtered out ${originalCount - filteredCount} cells starting with "A"`);
+    console.log('BASE_MINOR_B_CELLS after filtering:', BASE_MINOR_B_CELLS.length, 'cells total');
+    
+    // Update the global MINOR_B_CELLS to reflect the new BASE_MINOR_B_CELLS
+    window.MINOR_B_CELLS = [...BASE_MINOR_B_CELLS];
+    console.log('MINOR_B_CELLS updated:', window.MINOR_B_CELLS.length, 'cells');
+    
+    // Update the global MINOR_B_CELLS reference
+    MINOR_B_CELLS = window.MINOR_B_CELLS;
+    
     console.log('Transposed cell sets initialized successfully');
     
     // Also make them available as global constants for backward compatibility
@@ -286,7 +319,8 @@ const KEY_CHORD_MAP = window.KEY_CHORD_MAP;
 const CELLS = window.CELLS;
 const MAJOR_CELLS = window.MAJOR_CELLS;
 const MAJOR_RESOLUTION_CELLS = window.MAJOR_RESOLUTION_CELLS;
-const MINOR_B_CELLS = window.MINOR_B_CELLS;
+// MINOR_B_CELLS will be updated after initializeTransposedCells() is called
+let MINOR_B_CELLS = window.MINOR_B_CELLS;
 const MINOR_C_CELLS = window.MINOR_C_CELLS;
 const TURNAROUND_CELLS_1 = window.TURNAROUND_CELLS_1;
 const DFB = window.DFB;
