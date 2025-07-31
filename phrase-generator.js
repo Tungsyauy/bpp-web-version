@@ -670,6 +670,18 @@ function generateRhythmChanges56Phrase(keyName) {
             }
             
             const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            
+            // For the fourth cell (i=2, from CELLS), check that it starts with 'E', 'G', or 'D' before modulation
+            if (i === 2) {
+                const firstNote = leftCell[0].slice(0, -1); // Remove octave number
+                if (!['E', 'G', 'D'].includes(firstNote)) {
+                    console.log('Fourth cell starts with', firstNote, 'which is not allowed (must be E, G, or D), skipping this cell');
+                    validPhrase = false;
+                    break;
+                }
+                console.log('Fourth cell starts with', firstNote, 'which is allowed (E, G, or D)');
+            }
+            
             usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
