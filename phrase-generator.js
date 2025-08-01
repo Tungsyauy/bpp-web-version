@@ -117,7 +117,7 @@ function initializeCyclers(phraseType) {
     // Initialize resolution cycler - EXACT MATCH TO PYTHON
     if (phraseType === "long_25_minor") {
         resolutionCycler = new Cycler(MINOR_C_CELLS);
-    } else if (phraseType === "short_25_major" || phraseType === "long_25_major" || phraseType === "turnaround") {
+    } else if (phraseType === "short_25_major" || phraseType === "long_25_major" || phraseType === "turnaround" || phraseType === "backdoor_25" || phraseType === "iv_iv") {
         resolutionCycler = new Cycler(MAJOR_RESOLUTION_CELLS);
     } else if (phraseType === "rhythm_changes_56") {
         resolutionCycler = new Cycler(DFB);
@@ -160,6 +160,8 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "long_25_major": 17,
         "short_25_minor": 9,
         "long_25_minor": 17,
+        "backdoor_25": 17,
+        "iv_iv": 17,
         "turnaround": 17,
         "rhythm_changes_56": 17,
         "ii7_to_v7": 17,
@@ -226,6 +228,14 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 const result = generateII7ToV7Phrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
+            } else if (phraseType === "backdoor_25") {
+                const result = generateBackdoor25Phrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "iv_iv") {
+                const result = generateIVIVPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
             } else {
                 throw new Error(`Unknown phrase type: ${phraseType}`);
             }
@@ -237,6 +247,14 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
             // For turnaround, add 7 semitones (perfect fifth)
             if (phraseType === "turnaround") {
                 transpositionSemitones = (keySemitones + 7) % 12;
+            }
+            // For backdoor_25, add 7 semitones (perfect fifth) + 3 semitones = 10 semitones total
+            if (phraseType === "backdoor_25") {
+                transpositionSemitones = (keySemitones + 10) % 12;
+            }
+            // For iv_iv: uses pre-transposed cells, so only basic key transposition
+            else if (phraseType === "iv_iv") {
+                transpositionSemitones = keySemitones;
             }
             
             const transposedPhrase = phrase.map(note => transposeNote(note, transpositionSemitones, keyName));
@@ -274,6 +292,8 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 resolutionCycler.resetPermutation();
             } else if (phraseType === "ii7_to_v7") {
                 resolutionCycler.resetPermutation();
+            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv") {
+                resolutionCycler.resetPermutation();
             }
             
         } catch (error) {
@@ -286,6 +306,8 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
             } else if (phraseType === "rhythm_changes_56") {
                 resolutionCycler.resetPermutation();
             } else if (phraseType === "ii7_to_v7") {
+                resolutionCycler.resetPermutation();
+            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv") {
                 resolutionCycler.resetPermutation();
             }
         }
@@ -911,6 +933,151 @@ function validateResolutionCell(phrase, phraseType) {
     }
     
     return phrase;
+}
+
+// Generate backdoor 25 phrase - NEW FUNCTION
+// Generate backdoor 25 phrase - COMPLETE REIMPLEMENTATION
+function generateBackdoor25Phrase(keyName) {
+    console.log('generateBackdoor25Phrase called with keyName:', keyName);
+    console.log('MAJOR_RESOLUTION_CELLS_down5 available:', window.MAJOR_RESOLUTION_CELLS_down5 ? window.MAJOR_RESOLUTION_CELLS_down5.length : 'undefined');
+    console.log('CELLS2_down2 available:', window.CELLS2_down2 ? window.CELLS2_down2.length : 'undefined');
+    console.log('CELLS_down2 available:', window.CELLS_down2 ? window.CELLS_down2.length : 'undefined');
+    
+    const maxAttempts = 100;
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        // Create a cycler for the transposed resolution cells
+        const resolutionCyclerTransposed = new Cycler(window.MAJOR_RESOLUTION_CELLS_down5);
+        let resolutionCell = resolutionCyclerTransposed.nextItem();
+        console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
+        
+        let phrase = resolutionCell;
+        const cellSets = [window.CELLS2_down2, window.CELLS_down2, window.CELLS_down2];
+        let validPhrase = true;
+        
+        // Track used cells per cell set to avoid duplicates within the same set
+        let usedCellsPerSet = {
+            'CELLS2_down2': new Set(),
+            'CELLS_down2': new Set()
+        };
+        
+        // Add the resolution cell to the appropriate set (it's from MAJOR_RESOLUTION_CELLS_down5)
+        usedCellsPerSet['CELLS_down2'].add(resolutionCell.join(' '));
+        
+        for (let i = 0; i < cellSets.length; i++) {
+            const cellSet = cellSets[i];
+            const cellSetName = i === 0 ? 'CELLS2_down2' : 'CELLS_down2';
+            const firstNoteCurrent = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in', cellSetName);
+            
+            const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
+            console.log('Found', compatibleCells.length, 'compatible cells in', cellSetName);
+            
+            if (compatibleCells.length === 0) {
+                console.log('No compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            // Filter out cells that have already been used within this specific cell set
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            console.log('Found', unusedCompatibleCells.length, 'unused compatible cells in', cellSetName);
+            
+            if (unusedCompatibleCells.length === 0) {
+                console.log('No unused compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
+            const adjustedNewCell = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+        }
+        
+        if (validPhrase && phrase.length === 17) {
+            // Transpose the entire phrase a whole step up (2 semitones)
+            const transposedPhrase = phrase.map(note => transposeNote(note, 2, "C"));
+            return { phrase: transposedPhrase, length: transposedPhrase.length };
+        }
+        
+        attempts++;
+        resolutionCyclerTransposed.resetPermutation();
+    }
+    
+    throw new Error("Failed to generate a valid backdoor_25 phrase after maximum attempts");
+}
+
+// Generate IV – iv – phrase - COMPLETE REIMPLEMENTATION
+function generateIVIVPhrase(keyName) {
+    console.log('generateIVIVPhrase called with keyName:', keyName);
+    console.log('BASE_MAJOR_RESOLUTION_CELLS_down5 available:', window.BASE_MAJOR_RESOLUTION_CELLS_down5 ? window.BASE_MAJOR_RESOLUTION_CELLS_down5.length : 'undefined');
+    console.log('CELLS2_down2 available:', window.CELLS2_down2 ? window.CELLS2_down2.length : 'undefined');
+    console.log('MAJOR_CELLS_up5 available:', window.MAJOR_CELLS_up5 ? window.MAJOR_CELLS_up5.length : 'undefined');
+    
+    const maxAttempts = 100;
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        // Create a cycler for the transposed resolution cells
+        const resolutionCyclerTransposed = new Cycler(window.BASE_MAJOR_RESOLUTION_CELLS_down5);
+        let resolutionCell = resolutionCyclerTransposed.nextItem();
+        console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
+        
+        let phrase = resolutionCell;
+        const cellSets = [window.CELLS2_down2, window.MAJOR_CELLS_up5, window.MAJOR_CELLS_up5];
+        let validPhrase = true;
+        
+        // Track used cells per cell set to avoid duplicates within the same set
+        let usedCellsPerSet = {
+            'CELLS2_down2': new Set(),
+            'MAJOR_CELLS_up5': new Set()
+        };
+        
+        // Add the resolution cell to the appropriate set (it's from BASE_MAJOR_RESOLUTION_CELLS_down5)
+        usedCellsPerSet['MAJOR_CELLS_up5'].add(resolutionCell.join(' '));
+        
+        for (let i = 0; i < cellSets.length; i++) {
+            const cellSet = cellSets[i];
+            const cellSetName = i === 0 ? 'CELLS2_down2' : 'MAJOR_CELLS_up5';
+            const firstNoteCurrent = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in', cellSetName);
+            
+            const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
+            console.log('Found', compatibleCells.length, 'compatible cells in', cellSetName);
+            
+            if (compatibleCells.length === 0) {
+                console.log('No compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            // Filter out cells that have already been used within this specific cell set
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            console.log('Found', unusedCompatibleCells.length, 'unused compatible cells in', cellSetName);
+            
+            if (unusedCompatibleCells.length === 0) {
+                console.log('No unused compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
+            const adjustedNewCell = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+        }
+        
+        if (validPhrase && phrase.length === 17) {
+            return { phrase: phrase, length: phrase.length };
+        }
+        
+        attempts++;
+        resolutionCyclerTransposed.resetPermutation();
+    }
+    
+    throw new Error("Failed to generate a valid iv_iv phrase after maximum attempts");
 }
 
 // Export the generatePhrase function

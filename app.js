@@ -178,6 +178,16 @@ function setupEventListeners() {
         navigateToGenerator();
     });
 
+    document.getElementById('backdoor-25-btn').addEventListener('click', () => {
+        appState.phraseType = 'backdoor_25';
+        navigateToGenerator();
+    });
+
+    document.getElementById('iv-iv-btn').addEventListener('click', () => {
+        appState.phraseType = 'iv_iv';
+        navigateToGenerator();
+    });
+
     // Chord type selection (7sus4)
     document.getElementById('minor-chord-btn').addEventListener('click', () => {
         console.log('minor chord button clicked');

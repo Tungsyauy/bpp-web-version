@@ -366,9 +366,9 @@ body {
 .phrase-type-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: clamp(12px, 2vw, 16px);
-    max-width: min(90%, 520px);
-    width: min(90%, 520px);
+    gap: clamp(20px, 3vw, 32px);
+    max-width: min(90%, 700px);
+    width: min(90%, 700px);
     margin: 0 auto;
     justify-content: center;
     justify-items: center;
@@ -377,9 +377,9 @@ body {
 /* PC mode - more sparse spacing */
 @media screen and (min-width: 769px) {
     .phrase-type-grid {
-        gap: clamp(20px, 3vw, 30px);
-        max-width: min(90%, 600px);
-        width: min(90%, 600px);
+        gap: clamp(32px, 4vw, 48px);
+        max-width: min(90%, 800px);
+        width: min(90%, 800px);
     }
 }
 
@@ -395,10 +395,7 @@ body {
         font-size: clamp(10px, 1.2vw, 12px);
         padding: clamp(6px, 1vh, 8px) clamp(8px, 1.2vw, 10px);
     }
-    .phrase-type-grid button:last-child {
-        min-width: clamp(130px, 16vw, 150px);
-        max-width: clamp(150px, 18vw, 170px);
-    }
+    /* Removed special styling for last button to maintain 3x3 grid */
 }
 
 .phrase-type-grid .nav-btn {
@@ -416,11 +413,7 @@ body {
     margin: 0;
 }
 
-.phrase-type-grid button:last-child {
-    grid-column: 2 / 3;
-    justify-self: center;
-    min-width: clamp(110px, 14vw, 130px);
-}
+/* Removed special styling for last button to maintain 3x3 grid */
 
 .chord-type-grid {
     display: grid;
@@ -910,7 +903,6 @@ body {
         gap: 6px;
     }
     
-    .phrase-type-grid button:last-child,
     .chord-type-grid button:last-child {
         grid-column: 1;
     }
@@ -960,10 +952,7 @@ body {
         padding: clamp(6px, 1vh, 8px) clamp(8px, 1.2vw, 10px);
     }
     
-    .phrase-type-grid button:last-child {
-        min-width: clamp(130px, 16vw, 150px);
-        max-width: clamp(150px, 18vw, 170px);
-    }
+    /* Removed special styling for last button to maintain 3x3 grid */
     
     .chord-type-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -1038,26 +1027,20 @@ body {
         margin: 0 !important;
     }
     
-    /* Portrait mode phrase type grid - vertical layout with landscape button size */
+    /* Portrait mode phrase type grid - two column layout for iPhone portrait */
     .phrase-type-grid {
         display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-        max-width: 300px !important;
-        width: 300px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: clamp(12px, 2vw, 16px) !important;
+        max-width: min(90%, 520px) !important;
+        width: min(90%, 520px) !important;
         margin: 0 auto !important;
         justify-content: center !important;
         justify-items: center !important;
         align-items: center !important;
     }
     
-    /* Portrait mode last child - vertical layout */
-    .phrase-type-grid button:last-child {
-        grid-column: 1 !important;
-        justify-self: center !important;
-        min-width: clamp(130px, 16vw, 150px) !important;
-        max-width: clamp(150px, 18vw, 170px) !important;
-    }
+    /* Removed special styling for last button to maintain 3x3 grid */
     
     /* Portrait mode chord type grid - vertical layout like phrase type */
     .chord-type-grid {

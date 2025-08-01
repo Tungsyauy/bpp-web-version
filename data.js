@@ -112,7 +112,7 @@ const BASE_MAJOR_RESOLUTION_CELLS = [
     ["E4", "Db5", "C5", "Bb4", "A4"],
     ["E4", "G4", "Bb4", "Db5", "C5"],
     ["E4", "G4", "Db4", "B3", "C4"],
-    ["G4", "E4", "C4", "Bb3", "A3"],
+    ["G4", "F4", "Db4", "Bb3", "A3"],
     ["G4", "Ab4", "E4", "Db4", "C4"],
     ["Bb4", "Ab4", "E4", "C4", "G4"],
     ["Bb4", "Ab4", "E4", "Db4", "C4"],
@@ -255,6 +255,64 @@ function initializeTransposedCells() {
     console.log('Generating CELLSM5...');
     window.CELLSM5 = transposeCells(BASE_CELLS, -5, "C");
     console.log('CELLSM5 generated:', window.CELLSM5.length, 'cells');
+    
+    console.log('Generating MAJOR_CELLS_down5...');
+    window.MAJOR_CELLS_down5 = transposeCells(BASE_MAJOR_CELLS, -5, "C");
+    console.log('MAJOR_CELLS_down5 generated:', window.MAJOR_CELLS_down5.length, 'cells');
+    
+    console.log('Generating BASE_MAJOR_RESOLUTION_CELLS_down5...');
+    window.BASE_MAJOR_RESOLUTION_CELLS_down5 = transposeCells(BASE_MAJOR_RESOLUTION_CELLS, -5, "C");
+    console.log('BASE_MAJOR_RESOLUTION_CELLS_down5 generated:', window.BASE_MAJOR_RESOLUTION_CELLS_down5.length, 'cells');
+    
+    console.log('Generating MAJOR_RESOLUTION_CELLS_down5...');
+    // First, identify the problematic cell in the original BASE_MAJOR_RESOLUTION_CELLS
+    const problematicCell2 = ["F#4", "A4", "G4", "E4", "C4"];
+    // Transpose it to see what it becomes after -5 semitones
+    const transposedProblematicCell2 = problematicCell2.map(note => transposeNote(note, -5, "C"));
+    console.log('Original problematic cell 2:', problematicCell2);
+    console.log('Transposed problematic cell 2:', transposedProblematicCell2);
+    
+    window.MAJOR_RESOLUTION_CELLS_down5 = transposeCells(BASE_MAJOR_RESOLUTION_CELLS, -5, "C");
+    // Filter out the transposed version of the problematic cell
+    window.MAJOR_RESOLUTION_CELLS_down5 = window.MAJOR_RESOLUTION_CELLS_down5.filter(cell => 
+        !(cell[0] === transposedProblematicCell2[0] && 
+          cell[1] === transposedProblematicCell2[1] && 
+          cell[2] === transposedProblematicCell2[2] && 
+          cell[3] === transposedProblematicCell2[3] && 
+          cell[4] === transposedProblematicCell2[4])
+    );
+    console.log('MAJOR_RESOLUTION_CELLS_down5 generated:', window.MAJOR_RESOLUTION_CELLS_down5.length, 'cells');
+    
+    console.log('Generating CELLS2_down2...');
+    // First, identify the problematic cell in the original CELLS2
+    const problematicCell1 = ["G4", "F4", "E4", "F4", "Db4"];
+    // Transpose it to see what it becomes after -2 semitones
+    const transposedProblematicCell1 = problematicCell1.map(note => transposeNote(note, -2, "C"));
+    console.log('Original problematic cell 1:', problematicCell1);
+    console.log('Transposed problematic cell 1:', transposedProblematicCell1);
+    
+    window.CELLS2_down2 = transposeCells(window.CELLS2, -2, "C");
+    // Filter out the transposed version of the problematic cell
+    window.CELLS2_down2 = window.CELLS2_down2.filter(cell => 
+        !(cell[0] === transposedProblematicCell1[0] && 
+          cell[1] === transposedProblematicCell1[1] && 
+          cell[2] === transposedProblematicCell1[2] && 
+          cell[3] === transposedProblematicCell1[3] && 
+          cell[4] === transposedProblematicCell1[4])
+    );
+    console.log('CELLS2_down2 generated:', window.CELLS2_down2.length, 'cells');
+    
+    console.log('Generating BASE_MAJOR_RESOLUTION_CELLS_up5...');
+    window.BASE_MAJOR_RESOLUTION_CELLS_up5 = transposeCells(BASE_MAJOR_RESOLUTION_CELLS, 5, "C");
+    console.log('BASE_MAJOR_RESOLUTION_CELLS_up5 generated:', window.BASE_MAJOR_RESOLUTION_CELLS_up5.length, 'cells');
+    
+    console.log('Generating MAJOR_CELLS_up5...');
+    window.MAJOR_CELLS_up5 = transposeCells(BASE_MAJOR_CELLS, 5, "C");
+    console.log('MAJOR_CELLS_up5 generated:', window.MAJOR_CELLS_up5.length, 'cells');
+    
+    console.log('Generating CELLS_down2...');
+    window.CELLS_down2 = transposeCells(BASE_CELLS, -2, "C");
+    console.log('CELLS_down2 generated:', window.CELLS_down2.length, 'cells');
     
     console.log('Generating MINOR_C_CELLS_DOWN2...');
     window.MINOR_C_CELLS_DOWN2 = transposeCells(BASE_MINOR_C_CELLS, -2, "C");
@@ -464,6 +522,34 @@ window.KEY_CHORD_MAP = {
         "Eb": "in the key of Eb",
         "Bb": "in the key of Bb",
         "F": "in the key of F"
+    },
+    "backdoor_25": {
+        "C": "Fm Bb7 C",
+        "G": "Cm F7 G",
+        "D": "Gm C7 D",
+        "A": "Dm G7 A",
+        "E": "Am D7 E",
+        "B": "Em A7 B",
+        "F#": "Bm E7 F#",
+        "Db": "F#m B7 C#",
+        "Ab": "C#m F#7 G#",
+        "Eb": "Abm Db7 Eb",
+        "Bb": "Ebm Ab7 Bb",
+        "F": "Bbm Eb7 F"
+    },
+    "iv_iv": {
+        "C": "F – Fm –",
+        "G": "C – Cm –",
+        "D": "G – Gm –",
+        "A": "D – Dm –",
+        "E": "A – Am –",
+        "B": "E – Em –",
+        "F#": "B – Bm –",
+        "Db": "Gb – Gbm –",
+        "Ab": "Db – Dbm –",
+        "Eb": "Ab – Abm –",
+        "Bb": "Eb – Ebm –",
+        "F": "Bb – Bbm –"
     }
 };
 
