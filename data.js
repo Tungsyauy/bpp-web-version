@@ -15,7 +15,7 @@ const BASE_CELLS = [
     ["C4", "D4", "E4", "G4", "Bb4"],
     ["Bb4", "A4", "G4", "F4", "E4"],
     ["Bb3", "C4", "D4", "F4", "E4"],
-    ["G4", "D4", "F4", "D4", "E4"],
+    ["G4", "D4", "F4", "Eb4", "E4"],
     ["D4", "F4", "D4", "Eb4", "E4"],
     ["E4", "D4", "C4", "B3", "Bb3"],
     ["E5", "F5", "D5", "Bb4", "A4"],
@@ -50,7 +50,7 @@ const BASE_CELLS = [
     ["Bb4", "D4", "Db4", "D4", "A4"],
     ["Bb3", "F4", "D4", "Bb3", "A3"],
     //7.24
-    ["F#4", "D4", "F4", "D4", "E4"],
+    ["F#4", "D4", "F4", "Eb4", "E4"],
 ];
 
 // Additional cells unique to CELLS2 (these are only in CELLS2, not in base CELLS)
