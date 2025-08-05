@@ -97,6 +97,10 @@ function initializeCyclers(phraseType) {
     } else if (phraseType === "ii7_to_v7") {
         leftCycler = new Cycler(window.CELLS_up2);
         rightCycler = new Cycler(window.CELLS_down5);
+    } else if (phraseType === "biii_to_ii") {
+        console.log('Initializing biii_to_ii cyclers with BIIICELLS:', window.BIIICELLS);
+        leftCycler = new Cycler(window.BIIICELLS);
+        rightCycler = new Cycler(window.BIIICELLS);
     } else if (phraseType === "major" || phraseType === "long_major") {
         leftCycler = new Cycler(MAJOR_CELLS);
         rightCycler = new Cycler(MAJOR_CELLS);
@@ -165,6 +169,7 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "turnaround": 17,
         "rhythm_changes_56": 17,
         "ii7_to_v7": 17,
+        "biii_to_ii": 9,
         "long_major": 17,
         "long_7sus4": 17
     };
@@ -226,6 +231,10 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 phraseLength = result.length;
             } else if (phraseType === "ii7_to_v7") {
                 const result = generateII7ToV7Phrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "biii_to_ii") {
+                const result = generateBiiiToIiPhrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
             } else if (phraseType === "backdoor_25") {
@@ -777,6 +786,45 @@ function generateII7ToV7Phrase(keyName) {
     }
     
     throw new Error("Failed to generate a valid ii7_to_v7 phrase after maximum attempts");
+}
+
+// Generate biii° to ii phrase - EXACT COPY OF MAJOR PHRASE LOGIC
+function generateBiiiToIiPhrase(keyName) {
+    const maxAttempts = 50; // Limit attempts to avoid infinite loops
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const rightCell = rightCycler.nextItem();
+        const firstNoteRight = rightCell[0].slice(0, -1); // Remove octave
+        
+        // Skip the cell ["D4","B3","C4","D4","D#4"] or any cell of this shape
+        if (rightCell[0] === "D4" && rightCell[1] === "B3" && rightCell[2] === "C4" && rightCell[3] === "D4" && rightCell[4] === "D#4") {
+            continue; // Try again with a new right cell
+        }
+        
+        // Find compatible left cells (cells that end with the same pitch class as right cell starts)
+        const compatibleLeft = window.BIIICELLS.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteRight);
+        
+        // If no compatible left cells, try a new right cell
+        if (compatibleLeft.length === 0) {
+            continue; // Try again with a new right cell
+        }
+        
+        // Found compatible cells, select one
+        let leftCell = leftCycler.nextItem();
+        while (leftCell[leftCell.length - 1].slice(0, -1) !== firstNoteRight) {
+            leftCell = leftCycler.nextItem();
+        }
+        
+        // For biii° to ii phrases, use cells directly without octave adjustment to preserve cell shapes
+        const adjustedRight = adjustRightCell(leftCell, rightCell);
+        const phrase = leftCell.concat(adjustedRight.slice(1));
+        
+        return { phrase: phrase, length: phrase.length };
+    }
+    
+    // If we get here, we couldn't find compatible cells after max attempts
+    console.error('Could not find compatible cells for biii° to ii phrase after', maxAttempts, 'attempts');
+    throw new Error('Unable to generate biii° to ii phrase - no compatible cell combinations found');
 }
 
 // Validate resolution cell - exact match to Python implementation

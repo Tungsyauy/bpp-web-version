@@ -152,6 +152,8 @@ const BASE_MINOR_B_CELLS_ORIGINAL = [
     //["F4","C4","C#4","E4","D4"],
     //["A4","C5","C#5","E5","D5"],
     //["E4","F4","C#4","E4","D4"],
+    //8.5
+    ["E5", "D5", "B4", "A4", "G#4"],
 
 ];
 
@@ -206,6 +208,21 @@ const BASE_DFB = [
     ["D#4", "C4", "A3", "F#3", "G3"]
 ];
 
+// Base cells for biii° to ii phrases
+const BASE_BIIICELLS = [
+    ["D4","D#4","B3","D4","C4"],
+    ["B4","C5","G#4","B4","A4"],
+    ["D4","C4","B3","C4","F4"],
+    ["G#4","F#4","F4","Eb4","D4"],
+    ["B4","A4","G#4","F#4","F4"],
+    ["F4","Eb4","D4","C4","B3"],
+    ["B4","A4","G#4","A4","C5"],
+    ["D#4","F#4","B4","A4","G4"],
+    ["D4","C4","B3","A3","C4"],
+    ["D#4","F#4","B4","A4","C5"],
+    ["D4","B3","C4","D4","D#4"]
+];
+
 // ============================================================================
 // TRANSPOSITION HELPER FUNCTIONS (using music-utils.js functions)
 // ============================================================================
@@ -228,6 +245,7 @@ window.MINOR_B_CELLS = [...BASE_MINOR_B_CELLS_ORIGINAL];
 window.MINOR_C_CELLS = [...BASE_MINOR_C_CELLS];
 window.TURNAROUND_CELLS_1 = [...BASE_TURNAROUND_CELLS_1];
 window.DFB = [...BASE_DFB];
+window.BIIICELLS = [...BASE_BIIICELLS];
 
 // Deferred initialization for transposed sets (will be initialized after music-utils.js loads)
 function initializeTransposedCells() {
@@ -235,7 +253,8 @@ function initializeTransposedCells() {
     
     // Check if transposeNote is available
     if (typeof transposeNote !== 'function') {
-        console.error('transposeNote function not available!');
+        console.error('transposeNote function not available! Retrying in 100ms...');
+        setTimeout(initializeTransposedCells, 100);
         return;
     }
     
@@ -382,6 +401,7 @@ let MINOR_B_CELLS = window.MINOR_B_CELLS;
 const MINOR_C_CELLS = window.MINOR_C_CELLS;
 const TURNAROUND_CELLS_1 = window.TURNAROUND_CELLS_1;
 const DFB = window.DFB;
+const BIIICELLS = window.BIIICELLS;
 
 // Transposed cell sets will be available after initializeTransposedCells() is called
 // These will be initialized in the DOMContentLoaded event
@@ -510,6 +530,20 @@ window.KEY_CHORD_MAP = {
         "F": "in the key of F"
     },
     "ii7_to_v7": {
+        "C": "in the key of C",
+        "G": "in the key of G",
+        "D": "in the key of D",
+        "A": "in the key of A",
+        "E": "in the key of E",
+        "B": "in the key of B",
+        "F#": "in the key of F#",
+        "Db": "in the key of Db",
+        "Ab": "in the key of Ab",
+        "Eb": "in the key of Eb",
+        "Bb": "in the key of Bb",
+        "F": "in the key of F"
+    },
+    "biii_to_ii": {
         "C": "in the key of C",
         "G": "in the key of G",
         "D": "in the key of D",
@@ -737,9 +771,22 @@ window.KEYS = KEYS;
 
 // Initialize transposed cells when the page loads
 if (typeof window !== 'undefined') {
-    // Initialize transposed cells immediately
-    initializeTransposedCells();
-    console.log('Transposed cells initialized on page load');
+    // Wait for DOM to be ready and all scripts to be loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Small delay to ensure music-utils.js is fully loaded
+            setTimeout(() => {
+                initializeTransposedCells();
+                console.log('Transposed cells initialized on page load');
+            }, 100);
+        });
+    } else {
+        // DOM is already loaded, but wait a bit for other scripts
+        setTimeout(() => {
+            initializeTransposedCells();
+            console.log('Transposed cells initialized on page load');
+        }, 100);
+    }
 }
 
 // Export everything for use in other files

@@ -178,6 +178,11 @@ function setupEventListeners() {
         navigateToGenerator();
     });
 
+    document.getElementById('biii-to-ii-btn').addEventListener('click', () => {
+        appState.phraseType = 'biii_to_ii';
+        navigateToGenerator();
+    });
+
     document.getElementById('backdoor-25-btn').addEventListener('click', () => {
         appState.phraseType = 'backdoor_25';
         navigateToGenerator();
@@ -386,6 +391,7 @@ function getPhraseTypeDisplay(phraseType) {
         case 'major': return 'Major';
         case 'major_25': return 'Major 25';
         case 'minor_25': return 'Minor 25';
+        case 'biii_to_ii': return 'biii° to ii';
         case '7sus4': return getChordTypeDisplay(appState.chordType);
         default: return phraseType;
     }
@@ -861,6 +867,8 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getRhythmChanges56ChordProgression(selectedKey);
         } else if (phraseType === "ii7_to_v7") {
             return getII7ToV7ChordProgression(selectedKey);
+        } else if (phraseType === "biii_to_ii") {
+            return getBiiiToIiChordProgression(selectedKey);
         } else if (phraseType.includes("major")) {
             return `in the key of ${selectedKey}`;
         } else if (phraseType === "7sus4" || phraseType === "long_7sus4") {
@@ -907,6 +915,8 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getRhythmChanges56ChordProgression(generatedKey);
         } else if (phraseType === "ii7_to_v7") {
             return getII7ToV7ChordProgression(generatedKey);
+        } else if (phraseType === "biii_to_ii") {
+            return getBiiiToIiChordProgression(generatedKey);
         } else {
             const chordMapKey = phraseType in window.KEY_CHORD_MAP ? phraseType : "major";
             return window.KEY_CHORD_MAP[chordMapKey][generatedKey];
@@ -1117,6 +1127,26 @@ function getII7ToV7ChordProgression(key) {
     
     if (iiKey && vKey) {
         return `${iiKey}7 - ${vKey}7 -`;
+    }
+    return `in the key of ${key}`;
+}
+
+function getBiiiToIiChordProgression(key) {
+    // Calculate the chord progression biii° - ii
+    const keySemitones = KEYS[key];
+    const biiiSemitones = (keySemitones + 3) % 12;  // 3 semitones up from tonic
+    const iiSemitones = (keySemitones + 2) % 12;    // 2 semitones up from tonic
+    
+    let biiiKey = null;
+    let iiKey = null;
+    
+    for (const [k, semitones] of Object.entries(KEYS)) {
+        if (semitones === biiiSemitones) biiiKey = k;
+        if (semitones === iiSemitones) iiKey = k;
+    }
+    
+    if (biiiKey && iiKey) {
+        return `${biiiKey}° - ${iiKey}m`;
     }
     return `in the key of ${key}`;
 }
