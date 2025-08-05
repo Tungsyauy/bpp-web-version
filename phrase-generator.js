@@ -792,12 +792,25 @@ function generateII7ToV7Phrase(keyName) {
 function generateBiiiToIiPhrase(keyName) {
     const maxAttempts = 50; // Limit attempts to avoid infinite loops
     
+    // Define the four cells to exclude (from data.js lines 235-238)
+    const excludedCells = [
+        ["D4","B3","C4","D4","D#4"],
+        ["A4","G4","E4","F4","F#4"],
+        ["C4", "F4", "Ab4", "Eb4", "F#4"],
+        ["A4","D5","B4","F#4","D#4"]
+    ];
+    
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const rightCell = rightCycler.nextItem();
         const firstNoteRight = rightCell[0].slice(0, -1); // Remove octave
         
-        // Skip the cell ["D4","B3","C4","D4","D#4"] or any cell of this shape
-        if (rightCell[0] === "D4" && rightCell[1] === "B3" && rightCell[2] === "C4" && rightCell[3] === "D4" && rightCell[4] === "D#4") {
+        // Skip any of the four excluded cells
+        const isExcludedCell = excludedCells.some(excludedCell => 
+            rightCell.length === excludedCell.length &&
+            rightCell.every((note, index) => note === excludedCell[index])
+        );
+        
+        if (isExcludedCell) {
             continue; // Try again with a new right cell
         }
         
