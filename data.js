@@ -208,6 +208,17 @@ const BASE_DFB = [
     ["D#4", "C4", "A3", "F#3", "G3"]
 ];
 
+// Base cells for iii to biii° phrases (pre-selection)
+const PRE_BASE_BIIICELLS = [
+    ["B4","C5","G#4","B4","A4"],//yes
+    ["D4","C4","B3","C4","F4"],//yes
+    ["D4","C4","B3","A3","C4"],//yes
+    ["C4", "Eb4", "B3", "Ab3", "A3"],//yes
+    ["D4","B3","C4","D4","D#4"],//yes
+    ["A4","D5","B4","F#4","D#4"], //yes
+    ["A4","G4","E4","F4","F#4"] //yes
+];
+
 // Base cells for biii° to ii phrases
 const BASE_BIIICELLS = [
     ["D4","D#4","B3","D4","C4"],//yes
@@ -261,10 +272,24 @@ window.MINOR_B_CELLS = [...BASE_MINOR_B_CELLS_ORIGINAL];
 window.MINOR_C_CELLS = [...BASE_MINOR_C_CELLS];
 window.TURNAROUND_CELLS_1 = [...BASE_TURNAROUND_CELLS_1];
 window.DFB = [...BASE_DFB];
+window.PRE_BIIICELLS = [...PRE_BASE_BIIICELLS];
+window.BASE_BIIICELLS = [...BASE_BIIICELLS];
 window.BIIICELLS = [...BASE_BIIICELLS];
 
 // Deferred initialization for transposed sets (will be initialized after music-utils.js loads)
 function initializeTransposedCells() {
+    // Create the complete PRE_BIIICELLS by combining PRE_BASE_BIIICELLS with BASE_MAJOR_CELLS
+    // but filtering out cells that end with E or G
+    const filteredMajorCells = BASE_MAJOR_CELLS.filter(cell => {
+        const lastNote = cell[cell.length - 1].slice(0, -1); // Remove octave
+        return lastNote !== 'E' && lastNote !== 'G';
+    });
+    
+    // Combine PRE_BASE_BIIICELLS with filtered BASE_MAJOR_CELLS
+    window.PRE_BIIICELLS = [...PRE_BASE_BIIICELLS, ...filteredMajorCells];
+    console.log('PRE_BIIICELLS created:', window.PRE_BIIICELLS.length, 'cells');
+    console.log('Filtered out', BASE_MAJOR_CELLS.length - filteredMajorCells.length, 'cells ending with E or G');
+    
     console.log('initializeTransposedCells() called - starting initialization...');
     
     // Check if transposeNote is available

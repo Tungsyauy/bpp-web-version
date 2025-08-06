@@ -97,10 +97,18 @@ function initializeCyclers(phraseType) {
     } else if (phraseType === "ii7_to_v7") {
         leftCycler = new Cycler(window.CELLS_up2);
         rightCycler = new Cycler(window.CELLS_down5);
-    } else if (phraseType === "biii_to_ii" || phraseType === "long_biii_to_ii") {
-        console.log('Initializing biii_to_ii cyclers with BIIICELLS:', window.BIIICELLS);
+    } else if (phraseType === "iii_to_biii") {
+        console.log('Initializing iii_to_biii cyclers - left from PRE_BIIICELLS, right from BIIICELLS');
+        leftCycler = new Cycler(window.PRE_BIIICELLS);
+        rightCycler = new Cycler(window.BIIICELLS);
+    } else if (phraseType === "long_iii_to_biii") {
+        console.log('Initializing long_iii_to_biii cyclers with BIIICELLS:', window.BIIICELLS);
         leftCycler = new Cycler(window.BIIICELLS);
         rightCycler = new Cycler(window.BIIICELLS);
+    } else if (phraseType === "biii_to_ii_old" || phraseType === "long_biii_to_ii_old") {
+        console.log('Initializing biii_to_ii_old cyclers with BASE_BIIICELLS:', window.BASE_BIIICELLS);
+        leftCycler = new Cycler(window.BASE_BIIICELLS);
+        rightCycler = new Cycler(window.BASE_BIIICELLS);
     } else if (phraseType === "major" || phraseType === "long_major") {
         leftCycler = new Cycler(MAJOR_CELLS);
         rightCycler = new Cycler(MAJOR_CELLS);
@@ -172,8 +180,10 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "turnaround": 17,
         "rhythm_changes_56": 17,
         "ii7_to_v7": 17,
-        "biii_to_ii": 9,
-        "long_biii_to_ii": 17,
+        "iii_to_biii": 9,
+        "long_iii_to_biii": 17,
+        "biii_to_ii_old": 9,
+        "long_biii_to_ii_old": 17,
         "long_major": 17,
         "long_7sus4": 17
     };
@@ -237,12 +247,20 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 const result = generateII7ToV7Phrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
-            } else if (phraseType === "biii_to_ii") {
-                const result = generateBiiiToIiPhrase(keyName);
+            } else if (phraseType === "iii_to_biii") {
+                const result = generateIiiToBiiiPhrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
-            } else if (phraseType === "long_biii_to_ii") {
-                const result = generateLongBiiiToIiPhrase(keyName);
+            } else if (phraseType === "long_iii_to_biii") {
+                const result = generateLongIiiToBiiiPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "biii_to_ii_old") {
+                const result = generateBiiiToIiOldPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "long_biii_to_ii_old") {
+                const result = generateLongBiiiToIiOldPhrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
             } else if (phraseType === "backdoor_25") {
@@ -808,14 +826,117 @@ function generateII7ToV7Phrase(keyName) {
     throw new Error("Failed to generate a valid ii7_to_v7 phrase after maximum attempts");
 }
 
-// Generate biii° to ii phrase - EXACT COPY OF MAJOR PHRASE LOGIC
-function generateBiiiToIiPhrase(keyName) {
+// Generate iii to biii° phrase
+function generateIiiToBiiiPhrase(keyName) {
+    const maxAttempts = 50; // Limit attempts to avoid infinite loops
+    
+    // Define the four cells to exclude from right cell selection
+    const excludedCells = [
+        ["D4","B3","C4","D4","D#4"],
+        ["B4","A4","F#4","G4","G#4"],
+        ["C4", "F4", "Ab4", "Eb4", "F#4"],
+        ["A4","D5","B4","F#4","D#4"]
+    ];
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const rightCell = rightCycler.nextItem();
+        const firstNoteRight = rightCell[0].slice(0, -1); // Remove octave
+        
+        // Skip any of the four excluded cells
+        const isExcludedCell = excludedCells.some(excludedCell => 
+            rightCell.length === excludedCell.length &&
+            rightCell.every((note, index) => note === excludedCell[index])
+        );
+        
+        if (isExcludedCell) {
+            continue; // Try again with a new right cell
+        }
+        
+        // Find compatible left cells from PRE_BIIICELLS (cells that end with the same pitch class as right cell starts)
+        const compatibleLeft = window.PRE_BIIICELLS.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteRight);
+        
+        // If no compatible left cells, try a new right cell
+        if (compatibleLeft.length === 0) {
+            continue; // Try again with a new right cell
+        }
+        
+        // Found compatible cells, select one
+        let leftCell = leftCycler.nextItem();
+        while (leftCell[leftCell.length - 1].slice(0, -1) !== firstNoteRight) {
+            leftCell = leftCycler.nextItem();
+        }
+        
+        // For iii to biii° phrases, use cells directly without octave adjustment to preserve cell shapes
+        const adjustedRight = adjustRightCell(leftCell, rightCell);
+        const phrase = leftCell.concat(adjustedRight.slice(1));
+        
+        return { phrase: phrase, length: phrase.length };
+    }
+    
+    // If we get here, we couldn't find compatible cells after max attempts
+    console.error('Could not find compatible cells for iii to biii° phrase after', maxAttempts, 'attempts');
+    throw new Error('Unable to generate iii to biii° phrase - no compatible cell combinations found');
+}
+
+// Generate long iii to biii° phrase
+function generateLongIiiToBiiiPhrase(keyName) {
+    // First generate a short iii to biii° phrase (9 notes)
+    const shortResult = generateIiiToBiiiPhrase(keyName);
+    let phrase = shortResult.phrase;
+    
+    // Define the four cells to exclude from right cell selection (same as short version)
+    const excludedCells = [
+        ["D4","B3","C4","D4","D#4"],
+        ["B4","A4","F#4","G4","G#4"],
+        ["C4", "F4", "Ab4", "Eb4", "F#4"],
+        ["A4","D5","B4","F#4","D#4"]
+    ];
+    
+    // Now add two cells to the left, ensuring connectivity
+    // Cell 1 (position 1): from PRE_BIIICELLS
+    // Cell 0 (position 0): from BASE_MAJOR_CELLS
+    const cellSets = [window.PRE_BIIICELLS, window.MAJOR_CELLS];  // Two additional cells
+    let usedCells = new Set(); // Track used cells to avoid duplicates
+    
+    for (let i = 0; i < cellSets.length; i++) {
+        const cellSet = cellSets[i];
+        const firstNoteCurrent = phrase[0].slice(0, -1);  // Get pitch class of first note
+        const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
+        
+        if (compatibleCells.length > 0) {
+            // Filter out cells that have already been used
+            const unusedCompatibleCells = compatibleCells.filter(cell => {
+                // Check if cell has been used
+                if (usedCells.has(cell.join(' '))) {
+                    return false;
+                }
+                return true;
+            });
+            
+            if (unusedCompatibleCells.length === 0) {
+                throw new Error("No unused compatible cells found for long iii to biii° phrase");
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCells.add(leftCell.join(' ')); // Mark this cell as used
+            const adjustedPhrase = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedPhrase);  // Remove last note of left cell, add entire adjusted phrase
+        } else {
+            throw new Error("No compatible cells found for long iii to biii° phrase");
+        }
+    }
+    
+    return { phrase: phrase, length: phrase.length };
+}
+
+// Generate old biii° to ii phrase (original logic)
+function generateBiiiToIiOldPhrase(keyName) {
     const maxAttempts = 50; // Limit attempts to avoid infinite loops
     
     // Define the four cells to exclude (from data.js lines 235-238)
     const excludedCells = [
         ["D4","B3","C4","D4","D#4"],
-        ["A4","G4","E4","F4","F#4"],
+        ["B4","A4","F#4","G4","G#4"],
         ["C4", "F4", "Ab4", "Eb4", "F#4"],
         ["A4","D5","B4","F#4","D#4"]
     ];
@@ -835,7 +956,7 @@ function generateBiiiToIiPhrase(keyName) {
         }
         
         // Find compatible left cells (cells that end with the same pitch class as right cell starts)
-        const compatibleLeft = window.BIIICELLS.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteRight);
+        const compatibleLeft = window.BASE_BIIICELLS.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteRight);
         
         // If no compatible left cells, try a new right cell
         if (compatibleLeft.length === 0) {
@@ -856,18 +977,18 @@ function generateBiiiToIiPhrase(keyName) {
     }
     
     // If we get here, we couldn't find compatible cells after max attempts
-    console.error('Could not find compatible cells for biii° to ii phrase after', maxAttempts, 'attempts');
-    throw new Error('Unable to generate biii° to ii phrase - no compatible cell combinations found');
+    console.error('Could not find compatible cells for old biii° to ii phrase after', maxAttempts, 'attempts');
+    throw new Error('Unable to generate old biii° to ii phrase - no compatible cell combinations found');
 }
 
-// Generate long biii° to ii phrase - similar to long 25 minor approach
-function generateLongBiiiToIiPhrase(keyName) {
+// Generate long old biii° to ii phrase - similar to long 25 minor approach
+function generateLongBiiiToIiOldPhrase(keyName) {
     // First generate a short biii° to ii phrase (9 notes)
-    const shortResult = generateBiiiToIiPhrase(keyName);
+    const shortResult = generateBiiiToIiOldPhrase(keyName);
     let phrase = shortResult.phrase;
     
-    // Now add two cells from BIIICELLS to the left, ensuring connectivity
-    const cellSets = [window.BIIICELLS, window.BIIICELLS];  // Two additional cells
+    // Now add two cells from BASE_BIIICELLS to the left, ensuring connectivity
+    const cellSets = [window.BASE_BIIICELLS, window.BASE_BIIICELLS];  // Two additional cells
     let usedCells = new Set(); // Track used cells to avoid duplicates
     
     // Define the four cells to exclude (from data.js lines 235-238)
@@ -901,7 +1022,7 @@ function generateLongBiiiToIiPhrase(keyName) {
             });
             
             if (unusedCompatibleCells.length === 0) {
-                throw new Error("No unused compatible cells found for long biii° to ii phrase");
+                throw new Error("No unused compatible cells found for long old biii° to ii phrase");
             }
             
             const leftCell = new Cycler(unusedCompatibleCells).nextItem();
@@ -909,7 +1030,7 @@ function generateLongBiiiToIiPhrase(keyName) {
             const adjustedPhrase = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedPhrase);  // Remove last note of left cell, add entire adjusted phrase
         } else {
-            throw new Error("No compatible cells found for long biii° to ii phrase");
+            throw new Error("No compatible cells found for long old biii° to ii phrase");
         }
     }
     
