@@ -443,6 +443,18 @@ body {
     max-width: clamp(150px, 18vw, 170px) !important;
 }
 
+.twentyfive-type-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 2.5vw, 20px);
+    max-width: min(90%, 480px);
+    width: min(90%, 480px);
+    margin: 0 auto clamp(20px, 3vh, 25px) auto;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+}
+
 .return-arrow {
     position: absolute;
     bottom: clamp(10px, 1.5vh, 15px);

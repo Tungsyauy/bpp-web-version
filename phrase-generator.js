@@ -97,7 +97,7 @@ function initializeCyclers(phraseType) {
     } else if (phraseType === "ii7_to_v7") {
         leftCycler = new Cycler(window.CELLS_up2);
         rightCycler = new Cycler(window.CELLS_down5);
-    } else if (phraseType === "biii_to_ii") {
+    } else if (phraseType === "biii_to_ii" || phraseType === "long_biii_to_ii") {
         console.log('Initializing biii_to_ii cyclers with BIIICELLS:', window.BIIICELLS);
         leftCycler = new Cycler(window.BIIICELLS);
         rightCycler = new Cycler(window.BIIICELLS);
@@ -165,11 +165,13 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "short_25_minor": 9,
         "long_25_minor": 17,
         "backdoor_25": 17,
+        "short_backdoor_25": 9,
         "iv_iv": 17,
         "turnaround": 17,
         "rhythm_changes_56": 17,
         "ii7_to_v7": 17,
         "biii_to_ii": 9,
+        "long_biii_to_ii": 17,
         "long_major": 17,
         "long_7sus4": 17
     };
@@ -237,8 +239,16 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 const result = generateBiiiToIiPhrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
+            } else if (phraseType === "long_biii_to_ii") {
+                const result = generateLongBiiiToIiPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
             } else if (phraseType === "backdoor_25") {
                 const result = generateBackdoor25Phrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "short_backdoor_25") {
+                const result = generateShortBackdoor25Phrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
             } else if (phraseType === "iv_iv") {
@@ -840,6 +850,62 @@ function generateBiiiToIiPhrase(keyName) {
     throw new Error('Unable to generate biii° to ii phrase - no compatible cell combinations found');
 }
 
+// Generate long biii° to ii phrase - similar to long 25 minor approach
+function generateLongBiiiToIiPhrase(keyName) {
+    // First generate a short biii° to ii phrase (9 notes)
+    const shortResult = generateBiiiToIiPhrase(keyName);
+    let phrase = shortResult.phrase;
+    
+    // Now add two cells from BIIICELLS to the left, ensuring connectivity
+    const cellSets = [window.BIIICELLS, window.BIIICELLS];  // Two additional cells
+    let usedCells = new Set(); // Track used cells to avoid duplicates
+    
+    // Define the four cells to exclude (from data.js lines 235-238)
+    const excludedCells = [
+        ["D4","B3","C4","D4","D#4"],
+        ["A4","G4","E4","F4","F#4"],
+        ["C4", "F4", "Ab4", "Eb4", "F#4"],
+        ["A4","D5","B4","F#4","D#4"]
+    ];
+    
+    for (let i = 0; i < cellSets.length; i++) {
+        const cellSet = cellSets[i];
+        const firstNoteCurrent = phrase[0].slice(0, -1);  // Get pitch class of first note
+        const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
+        
+        if (compatibleCells.length > 0) {
+            // Filter out cells that have already been used and exclude the four specific cells
+            const unusedCompatibleCells = compatibleCells.filter(cell => {
+                // Check if cell has been used
+                if (usedCells.has(cell.join(' '))) {
+                    return false;
+                }
+                
+                // Check if cell is in the excluded list
+                const isExcludedCell = excludedCells.some(excludedCell => 
+                    cell.length === excludedCell.length &&
+                    cell.every((note, index) => note === excludedCell[index])
+                );
+                
+                return !isExcludedCell;
+            });
+            
+            if (unusedCompatibleCells.length === 0) {
+                throw new Error("No unused compatible cells found for long biii° to ii phrase");
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCells.add(leftCell.join(' ')); // Mark this cell as used
+            const adjustedPhrase = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedPhrase);  // Remove last note of left cell, add entire adjusted phrase
+        } else {
+            throw new Error("No compatible cells found for long biii° to ii phrase");
+        }
+    }
+    
+    return { phrase: phrase, length: phrase.length };
+}
+
 // Validate resolution cell - exact match to Python implementation
 function validateResolutionCell(phrase, phraseType) {
     console.log(`Validating resolution cell for phrase type: ${phraseType}`);
@@ -1068,6 +1134,73 @@ function generateBackdoor25Phrase(keyName) {
     }
     
     throw new Error("Failed to generate a valid backdoor_25 phrase after maximum attempts");
+}
+
+// Generate short backdoor 25 phrase - like long but with only 1 cell + resolution
+function generateShortBackdoor25Phrase(keyName) {
+    console.log('generateShortBackdoor25Phrase called with keyName:', keyName);
+    console.log('MAJOR_RESOLUTION_CELLS_down5 available:', window.MAJOR_RESOLUTION_CELLS_down5 ? window.MAJOR_RESOLUTION_CELLS_down5.length : 'undefined');
+    console.log('CELLS2_down2 available:', window.CELLS2_down2 ? window.CELLS2_down2.length : 'undefined');
+    
+    const maxAttempts = 100;
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        // Create a cycler for the transposed resolution cells
+        const resolutionCyclerTransposed = new Cycler(window.MAJOR_RESOLUTION_CELLS_down5);
+        let resolutionCell = resolutionCyclerTransposed.nextItem();
+        console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
+        
+        let phrase = resolutionCell;
+        const cellSets = [window.CELLS2_down2]; // Use CELLS2_down2 like the long version's 3rd cell
+        let validPhrase = true;
+        
+        // Track used cells per cell set to avoid duplicates within the same set
+        let usedCellsPerSet = {
+            'CELLS2_down2': new Set()
+        };
+        
+        for (let i = 0; i < cellSets.length; i++) {
+            const cellSet = cellSets[i];
+            const cellSetName = 'CELLS2_down2';
+            const firstNoteCurrent = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in', cellSetName);
+            
+            const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
+            console.log('Found', compatibleCells.length, 'compatible cells in', cellSetName);
+            
+            if (compatibleCells.length === 0) {
+                console.log('No compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            // Filter out cells that have already been used within this specific cell set
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            console.log('Found', unusedCompatibleCells.length, 'unused compatible cells in', cellSetName);
+            
+            if (unusedCompatibleCells.length === 0) {
+                console.log('No unused compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
+            const adjustedNewCell = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+        }
+        
+        if (validPhrase && phrase.length === 9) {
+            // For short backdoor 25, use no transposition (0 semitones)
+            return { phrase: phrase, length: phrase.length };
+        }
+        
+        attempts++;
+        resolutionCyclerTransposed.resetPermutation();
+    }
+    
+    throw new Error("Failed to generate a valid short_backdoor_25 phrase after maximum attempts");
 }
 
 // Generate IV – iv – phrase - COMPLETE REIMPLEMENTATION

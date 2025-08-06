@@ -147,6 +147,11 @@ function setupEventListeners() {
         showScreen('length');
     });
 
+    document.getElementById('25s-btn').addEventListener('click', () => {
+        console.log('25s button clicked');
+        showScreen('25-type');
+    });
+
     document.getElementById('major-25-btn').addEventListener('click', () => {
         console.log('major-25 button clicked');
         appState.phraseType = 'major_25';
@@ -180,12 +185,12 @@ function setupEventListeners() {
 
     document.getElementById('biii-to-ii-btn').addEventListener('click', () => {
         appState.phraseType = 'biii_to_ii';
-        navigateToGenerator();
+        showScreen('length');
     });
 
     document.getElementById('backdoor-25-btn').addEventListener('click', () => {
         appState.phraseType = 'backdoor_25';
-        navigateToGenerator();
+        showScreen('length');
     });
 
     document.getElementById('iv-iv-btn').addEventListener('click', () => {
@@ -265,16 +270,20 @@ function setupEventListeners() {
         }
     });
     document.getElementById('chord-type-return').addEventListener('click', () => showScreen('phrase-type'));
+    document.getElementById('25-type-return').addEventListener('click', () => showScreen('phrase-type'));
     document.getElementById('length-return').addEventListener('click', () => {
         if (appState.phraseType === '7sus4') {
             showScreen('chord-type');
+        } else if (appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' || appState.phraseType === 'backdoor_25') {
+            showScreen('25-type');
         } else {
             showScreen('phrase-type');
         }
     });
     document.getElementById('phrase-generator-return').addEventListener('click', () => {
         if (appState.phraseType === '7sus4' || appState.phraseType === 'major' || 
-            appState.phraseType === 'major_25' || appState.phraseType === 'minor_25') {
+            appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
+            appState.phraseType === 'biii_to_ii' || appState.phraseType === 'backdoor_25') {
             showScreen('length');
         } else {
             showScreen('phrase-type');
@@ -391,6 +400,9 @@ function getPhraseTypeDisplay(phraseType) {
         case 'major': return 'Major';
         case 'major_25': return 'Major 25';
         case 'minor_25': return 'Minor 25';
+        case 'backdoor_25': return 'Backdoor 25';
+        case 'iv_iv': return 'IV to iv';
+        case 'ii7_to_v7': return 'II7 to ii';
         case 'biii_to_ii': return 'biii° to ii';
         case '7sus4': return getChordTypeDisplay(appState.chordType);
         default: return phraseType;
@@ -787,6 +799,10 @@ function getFinalPhraseType(useRandomCycling = false) {
         return appState.length === 'short' ? 'short_25_major' : 'long_25_major';
     } else if (appState.phraseType === 'minor_25') {
         return appState.length === 'short' ? 'short_25_minor' : 'long_25_minor';
+    } else if (appState.phraseType === 'biii_to_ii') {
+        return appState.length === 'short' ? 'biii_to_ii' : 'long_biii_to_ii';
+    } else if (appState.phraseType === 'backdoor_25') {
+        return appState.length === 'short' ? 'short_backdoor_25' : 'backdoor_25';
     } else {
         return appState.phraseType;
     }
@@ -867,8 +883,10 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getRhythmChanges56ChordProgression(selectedKey);
         } else if (phraseType === "ii7_to_v7") {
             return getII7ToV7ChordProgression(selectedKey);
-        } else if (phraseType === "biii_to_ii") {
+        } else if (phraseType === "biii_to_ii" || phraseType === "long_biii_to_ii") {
             return getBiiiToIiChordProgression(selectedKey);
+        } else if (phraseType === "backdoor_25" || phraseType === "short_backdoor_25") {
+            return window.KEY_CHORD_MAP["backdoor_25"][selectedKey];
         } else if (phraseType.includes("major")) {
             return `in the key of ${selectedKey}`;
         } else if (phraseType === "7sus4" || phraseType === "long_7sus4") {
@@ -915,8 +933,10 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getRhythmChanges56ChordProgression(generatedKey);
         } else if (phraseType === "ii7_to_v7") {
             return getII7ToV7ChordProgression(generatedKey);
-        } else if (phraseType === "biii_to_ii") {
+        } else if (phraseType === "biii_to_ii" || phraseType === "long_biii_to_ii") {
             return getBiiiToIiChordProgression(generatedKey);
+        } else if (phraseType === "backdoor_25" || phraseType === "short_backdoor_25") {
+            return window.KEY_CHORD_MAP["backdoor_25"][generatedKey];
         } else {
             const chordMapKey = phraseType in window.KEY_CHORD_MAP ? phraseType : "major";
             return window.KEY_CHORD_MAP[chordMapKey][generatedKey];
@@ -1107,26 +1127,23 @@ function getRhythmChanges56ChordProgression(key) {
 function getII7ToV7ChordProgression(key) {
     // Special cases with exact accidentals (from Python)
     if (key === "Gb" || key === "F#") {
-        return "Ab7 - Db7 -";
+        return "Ab7 - Abm -";
     } else if (key === "B") {
-        return "C#7 - F#7 -";
+        return "C#7 - C#m -";
     }
     
-    // For other keys, calculate the chord progression ii7 - V7
+    // For other keys, calculate the chord progression II7 - ii
     const keySemitones = KEYS[key];
     const iiSemitones = (keySemitones + 2) % 12;  // 2 semitones up from tonic
-    const vSemitones = (keySemitones + 7) % 12;   // 7 semitones up from tonic
     
     let iiKey = null;
-    let vKey = null;
     
     for (const [k, semitones] of Object.entries(KEYS)) {
         if (semitones === iiSemitones) iiKey = k;
-        if (semitones === vSemitones) vKey = k;
     }
     
-    if (iiKey && vKey) {
-        return `${iiKey}7 - ${vKey}7 -`;
+    if (iiKey) {
+        return `${iiKey}7 - ${iiKey}m -`;
     }
     return `in the key of ${key}`;
 }
