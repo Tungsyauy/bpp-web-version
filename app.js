@@ -193,6 +193,11 @@ function setupEventListeners() {
         showScreen('length');
     });
 
+    document.getElementById('deceptive-25-btn').addEventListener('click', () => {
+        appState.phraseType = 'deceptive_25';
+        showScreen('length');
+    });
+
     document.getElementById('iv-iv-btn').addEventListener('click', () => {
         appState.phraseType = 'iv_iv';
         navigateToGenerator();
@@ -271,24 +276,25 @@ function setupEventListeners() {
     });
     document.getElementById('chord-type-return').addEventListener('click', () => showScreen('phrase-type'));
     document.getElementById('25-type-return').addEventListener('click', () => showScreen('phrase-type'));
-    document.getElementById('length-return').addEventListener('click', () => {
-        if (appState.phraseType === '7sus4') {
-            showScreen('chord-type');
-        } else if (appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' || appState.phraseType === 'backdoor_25') {
-            showScreen('25-type');
-        } else {
-            showScreen('phrase-type');
-        }
-    });
-    document.getElementById('phrase-generator-return').addEventListener('click', () => {
-        if (appState.phraseType === '7sus4' || appState.phraseType === 'major' || 
-            appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
-            appState.phraseType === 'biii_to_ii' || appState.phraseType === 'backdoor_25') {
-            showScreen('length');
-        } else {
-            showScreen('phrase-type');
-        }
-    });
+            document.getElementById('length-return').addEventListener('click', () => {
+            if (appState.phraseType === '7sus4') {
+                showScreen('chord-type');
+            } else if (appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' || appState.phraseType === 'backdoor_25' || appState.phraseType === 'deceptive_25') {
+                showScreen('25-type');
+            } else {
+                showScreen('phrase-type');
+            }
+        });
+            document.getElementById('phrase-generator-return').addEventListener('click', () => {
+            if (appState.phraseType === '7sus4' || appState.phraseType === 'major' || 
+                appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
+                appState.phraseType === 'biii_to_ii' || appState.phraseType === 'backdoor_25' ||
+                appState.phraseType === 'deceptive_25') {
+                showScreen('length');
+            } else {
+                showScreen('phrase-type');
+            }
+        });
 
     // Keyboard navigation
     document.addEventListener('keydown', handleKeyPress);
@@ -381,6 +387,16 @@ function updateScreenTitles() {
         document.getElementById('chord-type-title').textContent = 'Choose 7sus4 Chord Type';
     }
 
+    // Update 25-type screen title
+    if (appState.mode === 'designate' && appState.selectedKey) {
+        document.getElementById('25-type-title').textContent = 
+            `Key of ${appState.selectedKey}: Choose 25 Type`;
+    } else if (appState.mode === 'random') {
+        document.getElementById('25-type-title').textContent = 'Random Key: Choose 25 Type';
+    } else {
+        document.getElementById('25-type-title').textContent = 'Choose 25 Type';
+    }
+
     // Update length screen title
     if (appState.mode === 'designate' && appState.selectedKey) {
         let phraseTypeDisplay = getPhraseTypeDisplay(appState.phraseType);
@@ -401,6 +417,7 @@ function getPhraseTypeDisplay(phraseType) {
         case 'major_25': return 'Major 25';
         case 'minor_25': return 'Minor 25';
         case 'backdoor_25': return 'Backdoor 25';
+        case 'deceptive_25': return 'Deceptive 25';
         case 'iv_iv': return 'IV to iv';
         case 'ii7_to_v7': return 'II7 to ii';
         case 'biii_to_ii': return 'biii° to ii';
@@ -803,6 +820,8 @@ function getFinalPhraseType(useRandomCycling = false) {
         return appState.length === 'short' ? 'biii_to_ii' : 'long_biii_to_ii';
     } else if (appState.phraseType === 'backdoor_25') {
         return appState.length === 'short' ? 'short_backdoor_25' : 'backdoor_25';
+    } else if (appState.phraseType === 'deceptive_25') {
+        return appState.length === 'short' ? 'short_deceptive_25' : 'deceptive_25';
     } else {
         return appState.phraseType;
     }
@@ -887,6 +906,8 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getBiiiToIiChordProgression(selectedKey);
         } else if (phraseType === "backdoor_25" || phraseType === "short_backdoor_25") {
             return window.KEY_CHORD_MAP["backdoor_25"][selectedKey];
+        } else if (phraseType === "deceptive_25" || phraseType === "short_deceptive_25") {
+            return getDeceptive25ChordProgression(selectedKey);
         } else if (phraseType.includes("major")) {
             return `in the key of ${selectedKey}`;
         } else if (phraseType === "7sus4" || phraseType === "long_7sus4") {
@@ -937,6 +958,8 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getBiiiToIiChordProgression(generatedKey);
         } else if (phraseType === "backdoor_25" || phraseType === "short_backdoor_25") {
             return window.KEY_CHORD_MAP["backdoor_25"][generatedKey];
+        } else if (phraseType === "deceptive_25" || phraseType === "short_deceptive_25") {
+            return getDeceptive25ChordProgression(generatedKey);
         } else {
             const chordMapKey = phraseType in window.KEY_CHORD_MAP ? phraseType : "major";
             return window.KEY_CHORD_MAP[chordMapKey][generatedKey];
@@ -1165,6 +1188,54 @@ function getBiiiToIiChordProgression(key) {
     if (biiiKey && iiKey) {
         return `${biiiKey}° - ${iiKey}m`;
     }
+    return `in the key of ${key}`;
+}
+
+function getDeceptive25ChordProgression(key) {
+    // Deceptive 25: same as 251 minor but in a different key
+    // Key of C: same as 251 minor in key of E (F#ø7 B7 C)
+    // Key of Eb: same as 251 minor in key of G (Aø7 D7 Eb)
+    
+    // Map the target key to the source key for 251 minor
+    const keyToSourceKey = {
+        "C": "E",   // Key of C uses 251 minor from key of E
+        "G": "B",   // Key of G uses 251 minor from key of B
+        "D": "F#",  // Key of D uses 251 minor from key of F#
+        "A": "C#",  // Key of A uses 251 minor from key of C#
+        "E": "Ab",  // Key of E uses 251 minor from key of Ab
+        "B": "Eb",  // Key of B uses 251 minor from key of Eb
+        "F#": "Bb", // Key of F# uses 251 minor from key of Bb
+        "Db": "F",  // Key of Db uses 251 minor from key of F
+        "Ab": "C",  // Key of Ab uses 251 minor from key of C
+        "Eb": "G",  // Key of Eb uses 251 minor from key of G
+        "Bb": "D",  // Key of Bb uses 251 minor from key of D
+        "F": "A"    // Key of F uses 251 minor from key of A
+    };
+    
+    const sourceKey = keyToSourceKey[key];
+    if (!sourceKey) {
+        return `in the key of ${key}`;
+    }
+    
+    // Calculate the chord progression: iiø7 V7 I for the SOURCE key (not target key)
+    // The first two chords come from the source key, the last chord is the target key
+    const sourceSemitones = KEYS[sourceKey];
+    const iiSemitones = (sourceSemitones + 2) % 12;  // 2 semitones up from source tonic
+    const vSemitones = (sourceSemitones + 7) % 12;   // 7 semitones up from source tonic
+    
+    let iiKey = null;
+    let vKey = null;
+    
+    for (const [k, semitones] of Object.entries(KEYS)) {
+        if (semitones === iiSemitones) iiKey = k;
+        if (semitones === vSemitones) vKey = k;
+    }
+
+
+    if (iiKey && vKey) {
+        return `${iiKey}ø7 ${vKey}7 ${key}`;
+    }
+    
     return `in the key of ${key}`;
 }
 

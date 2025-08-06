@@ -166,6 +166,8 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "long_25_minor": 17,
         "backdoor_25": 17,
         "short_backdoor_25": 9,
+        "deceptive_25": 17,
+        "short_deceptive_25": 9,
         "iv_iv": 17,
         "turnaround": 17,
         "rhythm_changes_56": 17,
@@ -249,6 +251,14 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 phraseLength = result.length;
             } else if (phraseType === "short_backdoor_25") {
                 const result = generateShortBackdoor25Phrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "deceptive_25") {
+                const result = generateDeceptive25Phrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "short_deceptive_25") {
+                const result = generateShortDeceptive25Phrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
             } else if (phraseType === "iv_iv") {
@@ -1201,6 +1211,115 @@ function generateShortBackdoor25Phrase(keyName) {
     }
     
     throw new Error("Failed to generate a valid short_backdoor_25 phrase after maximum attempts");
+}
+
+// Generate deceptive 25 phrase - same as 251 minor but in different key
+function generateDeceptive25Phrase(keyName) {
+    // Map the target key to the source key for 251 minor
+    const keyToSourceKey = {
+        "C": "E",   // Key of C uses 251 minor from key of E
+        "G": "B",   // Key of G uses 251 minor from key of B
+        "D": "F#",  // Key of D uses 251 minor from key of F#
+        "A": "C#",  // Key of A uses 251 minor from key of C#
+        "E": "Ab",  // Key of E uses 251 minor from key of Ab
+        "B": "Eb",  // Key of B uses 251 minor from key of Eb
+        "F#": "Bb", // Key of F# uses 251 minor from key of Bb
+        "Db": "F",  // Key of Db uses 251 minor from key of F
+        "Ab": "C",  // Key of Ab uses 251 minor from key of C
+        "Eb": "G",  // Key of Eb uses 251 minor from key of G
+        "Bb": "D",  // Key of Bb uses 251 minor from key of D
+        "F": "A"    // Key of F uses 251 minor from key of A
+    };
+    
+    const sourceKey = keyToSourceKey[keyName];
+    if (!sourceKey) {
+        throw new Error(`No source key mapping found for deceptive 25 in key ${keyName}`);
+    }
+    
+    // Save current cyclers
+    const originalLeftCycler = leftCycler;
+    const originalRightCycler = rightCycler;
+    const originalResolutionCycler = resolutionCycler;
+    
+    // Initialize cyclers for long_25_minor to generate the source phrase
+    initializeCyclers("long_25_minor");
+    
+    // Generate the 251 minor phrase in the source key
+    console.log(`Generating deceptive 25: source key = ${sourceKey}, target key = ${keyName}`);
+    const sourceResult = generateLong25MinorPhrase(sourceKey);
+    console.log(`Generated phrase in source key ${sourceKey}:`, sourceResult.phrase);
+    
+    // Restore original cyclers
+    leftCycler = originalLeftCycler;
+    rightCycler = originalRightCycler;
+    resolutionCycler = originalResolutionCycler;
+    
+    // Transpose the phrase to the target key
+    const targetSemitones = KEYS[keyName];
+    const sourceSemitones = KEYS[sourceKey];
+    const transposition = (targetSemitones - sourceSemitones + 12) % 12;
+    console.log(`Transposition: ${targetSemitones} - ${sourceSemitones} = ${transposition} semitones`);
+    
+    const transposedPhrase = sourceResult.phrase.map(note => transposeNote(note, transposition, "C"));
+    console.log(`Transposed phrase:`, transposedPhrase);
+    
+    // Apply final modulation: one semitone down to fix the key issue
+    const finalPhrase = transposedPhrase.map(note => transposeNote(note, -1, "C"));
+    console.log(`Final phrase after -1 semitone adjustment:`, finalPhrase);
+    
+    return { phrase: finalPhrase, length: finalPhrase.length };
+}
+
+// Generate short deceptive 25 phrase - same as short 251 minor but in different key
+function generateShortDeceptive25Phrase(keyName) {
+    // Map the target key to the source key for 251 minor
+    const keyToSourceKey = {
+        "C": "E",   // Key of C uses 251 minor from key of E
+        "G": "B",   // Key of G uses 251 minor from key of B
+        "D": "F#",  // Key of D uses 251 minor from key of F#
+        "A": "C#",  // Key of A uses 251 minor from key of C#
+        "E": "Ab",  // Key of E uses 251 minor from key of Ab
+        "B": "Eb",  // Key of B uses 251 minor from key of Eb
+        "F#": "Bb", // Key of F# uses 251 minor from key of Bb
+        "Db": "F",  // Key of Db uses 251 minor from key of F
+        "Ab": "C",  // Key of Ab uses 251 minor from key of C
+        "Eb": "G",  // Key of Eb uses 251 minor from key of G
+        "Bb": "D",  // Key of Bb uses 251 minor from key of D
+        "F": "A"    // Key of F uses 251 minor from key of A
+    };
+    
+    const sourceKey = keyToSourceKey[keyName];
+    if (!sourceKey) {
+        throw new Error(`No source key mapping found for short deceptive 25 in key ${keyName}`);
+    }
+    
+    // Save current cyclers
+    const originalLeftCycler = leftCycler;
+    const originalRightCycler = rightCycler;
+    const originalResolutionCycler = resolutionCycler;
+    
+    // Initialize cyclers for short_25_minor to generate the source phrase
+    initializeCyclers("short_25_minor");
+    
+    // Generate the short 251 minor phrase in the source key
+    const sourceResult = generateShort25MinorPhrase(sourceKey);
+    
+    // Restore original cyclers
+    leftCycler = originalLeftCycler;
+    rightCycler = originalRightCycler;
+    resolutionCycler = originalResolutionCycler;
+    
+    // Transpose the phrase to the target key
+    const targetSemitones = KEYS[keyName];
+    const sourceSemitones = KEYS[sourceKey];
+    const transposition = (targetSemitones - sourceSemitones + 12) % 12;
+    
+    const transposedPhrase = sourceResult.phrase.map(note => transposeNote(note, transposition, "C"));
+    
+    // Apply final modulation: one semitone down to fix the key issue
+    const finalPhrase = transposedPhrase.map(note => transposeNote(note, -1, "C"));
+    
+    return { phrase: finalPhrase, length: finalPhrase.length };
 }
 
 // Generate IV – iv – phrase - COMPLETE REIMPLEMENTATION
