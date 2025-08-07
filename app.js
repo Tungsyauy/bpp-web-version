@@ -205,7 +205,7 @@ function setupEventListeners() {
 
     document.getElementById('iv-iv-btn').addEventListener('click', () => {
         appState.phraseType = 'iv_iv';
-        navigateToGenerator();
+        showScreen('length');
     });
 
     // Chord type selection (7sus4)
@@ -294,7 +294,7 @@ function setupEventListeners() {
                     if (appState.phraseType === '7sus4' || appState.phraseType === 'major' || 
             appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
             appState.phraseType === 'iii_to_biii' || appState.phraseType === 'biii_to_ii_old' || appState.phraseType === 'backdoor_25' ||
-            appState.phraseType === 'deceptive_25') {
+            appState.phraseType === 'deceptive_25' || appState.phraseType === 'iv_iv') {
                 showScreen('length');
             } else {
                 showScreen('phrase-type');
@@ -348,7 +348,8 @@ function handleBackNavigation() {
             break;
         case 'phrase-generator':
             if (appState.phraseType === '7sus4' || appState.phraseType === 'major' || 
-                appState.phraseType === 'major_25' || appState.phraseType === 'minor_25') {
+                appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
+                appState.phraseType === 'iv_iv') {
                 showScreen('length');
             } else {
                 showScreen('phrase-type');
@@ -424,6 +425,7 @@ function getPhraseTypeDisplay(phraseType) {
         case 'backdoor_25': return 'Backdoor 25';
         case 'deceptive_25': return 'Deceptive 25';
         case 'iv_iv': return 'IV to iv';
+        case 'short_iv_iv': return 'IV to iv';
         case 'ii7_to_v7': return 'II7 to ii';
         case 'iii_to_biii': return 'iii to biii°';
         case 'biii_to_ii_old': return 'pure biii°';
@@ -830,6 +832,8 @@ function getFinalPhraseType(useRandomCycling = false) {
         return appState.length === 'short' ? 'short_backdoor_25' : 'backdoor_25';
     } else if (appState.phraseType === 'deceptive_25') {
         return appState.length === 'short' ? 'short_deceptive_25' : 'deceptive_25';
+    } else if (appState.phraseType === 'iv_iv') {
+        return appState.length === 'short' ? 'short_iv_iv' : 'iv_iv';
     } else {
         return appState.phraseType;
     }
@@ -918,6 +922,8 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return window.KEY_CHORD_MAP["backdoor_25"][selectedKey];
         } else if (phraseType === "deceptive_25" || phraseType === "short_deceptive_25") {
             return getDeceptive25ChordProgression(selectedKey);
+        } else if (phraseType === "iv_iv" || phraseType === "short_iv_iv") {
+            return window.KEY_CHORD_MAP["iv_iv"][selectedKey];
         } else if (phraseType.includes("major")) {
             return `in the key of ${selectedKey}`;
         } else if (phraseType === "7sus4" || phraseType === "long_7sus4") {
@@ -972,6 +978,8 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return window.KEY_CHORD_MAP["backdoor_25"][generatedKey];
         } else if (phraseType === "deceptive_25" || phraseType === "short_deceptive_25") {
             return getDeceptive25ChordProgression(generatedKey);
+        } else if (phraseType === "iv_iv" || phraseType === "short_iv_iv") {
+            return window.KEY_CHORD_MAP["iv_iv"][generatedKey];
         } else {
             const chordMapKey = phraseType in window.KEY_CHORD_MAP ? phraseType : "major";
             return window.KEY_CHORD_MAP[chordMapKey][generatedKey];

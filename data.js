@@ -370,6 +370,16 @@ function initializeTransposedCells() {
     window.MAJOR_CELLS_up5 = transposeCells(BASE_MAJOR_CELLS, 5, "C");
     console.log('MAJOR_CELLS_up5 generated:', window.MAJOR_CELLS_up5.length, 'cells');
     
+    // Filter out cells that contain the note Bb
+    console.log('Filtering out cells containing Bb from MAJOR_CELLS_up5...');
+    const originalMAJOR_CELLS_up5Count = window.MAJOR_CELLS_up5.length;
+    window.MAJOR_CELLS_up5 = window.MAJOR_CELLS_up5.filter(cell => 
+        !cell.some(note => note.includes('Bb'))
+    );
+    const filteredMAJOR_CELLS_up5Count = window.MAJOR_CELLS_up5.length;
+    console.log(`Filtered out ${originalMAJOR_CELLS_up5Count - filteredMAJOR_CELLS_up5Count} cells containing Bb from MAJOR_CELLS_up5`);
+    console.log('MAJOR_CELLS_up5 after filtering:', window.MAJOR_CELLS_up5.length, 'cells');
+    
     console.log('Generating CELLS_down2...');
     window.CELLS_down2 = transposeCells(BASE_CELLS, -2, "C");
     console.log('CELLS_down2 generated:', window.CELLS_down2.length, 'cells');
@@ -613,6 +623,20 @@ window.KEY_CHORD_MAP = {
         "F": "Bbm Eb7 F"
     },
     "iv_iv": {
+        "C": "F – Fm –",
+        "G": "C – Cm –",
+        "D": "G – Gm –",
+        "A": "D – Dm –",
+        "E": "A – Am –",
+        "B": "E – Em –",
+        "F#": "B – Bm –",
+        "Db": "Gb – Gbm –",
+        "Ab": "Db – Dbm –",
+        "Eb": "Ab – Abm –",
+        "Bb": "Eb – Ebm –",
+        "F": "Bb – Bbm –"
+    },
+    "short_iv_iv": {
         "C": "F – Fm –",
         "G": "C – Cm –",
         "D": "G – Gm –",

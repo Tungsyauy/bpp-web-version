@@ -177,6 +177,7 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "deceptive_25": 17,
         "short_deceptive_25": 9,
         "iv_iv": 17,
+        "short_iv_iv": 9,
         "turnaround": 17,
         "rhythm_changes_56": 17,
         "ii7_to_v7": 17,
@@ -279,6 +280,10 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 const result = generateShortDeceptive25Phrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
+            } else if (phraseType === "short_iv_iv") {
+                const result = generateShortIVIVPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
             } else if (phraseType === "iv_iv") {
                 const result = generateIVIVPhrase(keyName);
                 phrase = result.phrase;
@@ -300,7 +305,7 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 transpositionSemitones = (keySemitones + 10) % 12;
             }
             // For iv_iv: uses pre-transposed cells, so only basic key transposition
-            else if (phraseType === "iv_iv") {
+            else if (phraseType === "iv_iv" || phraseType === "short_iv_iv") {
                 transpositionSemitones = keySemitones;
             }
             
@@ -339,7 +344,7 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 resolutionCycler.resetPermutation();
             } else if (phraseType === "ii7_to_v7") {
                 resolutionCycler.resetPermutation();
-            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv") {
+            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv" || phraseType === "short_iv_iv") {
                 resolutionCycler.resetPermutation();
             }
             
@@ -354,7 +359,7 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 resolutionCycler.resetPermutation();
             } else if (phraseType === "ii7_to_v7") {
                 resolutionCycler.resetPermutation();
-            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv") {
+            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv" || phraseType === "short_iv_iv") {
                 resolutionCycler.resetPermutation();
             }
         }
@@ -1441,6 +1446,47 @@ function generateShortDeceptive25Phrase(keyName) {
     const finalPhrase = transposedPhrase.map(note => transposeNote(note, -1, "C"));
     
     return { phrase: finalPhrase, length: finalPhrase.length };
+}
+
+// Generate short IV – iv – phrase (2 cells)
+function generateShortIVIVPhrase(keyName) {
+    console.log('generateShortIVIVPhrase called with keyName:', keyName);
+    console.log('BASE_MAJOR_RESOLUTION_CELLS_down5 available:', window.BASE_MAJOR_RESOLUTION_CELLS_down5 ? window.BASE_MAJOR_RESOLUTION_CELLS_down5.length : 'undefined');
+    console.log('MAJOR_CELLS_up5 available:', window.MAJOR_CELLS_up5 ? window.MAJOR_CELLS_up5.length : 'undefined');
+    
+    const maxAttempts = 100;
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        // Create a cycler for the transposed resolution cells (right cell)
+        const resolutionCyclerTransposed = new Cycler(window.BASE_MAJOR_RESOLUTION_CELLS_down5);
+        let resolutionCell = resolutionCyclerTransposed.nextItem();
+        console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
+        
+        let phrase = resolutionCell;
+        
+        // Add one cell from MAJOR_CELLS_up5 (left cell)
+        const firstNoteCurrent = phrase[0].slice(0, -1);
+        console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in MAJOR_CELLS_up5');
+        
+        const compatibleCells = window.MAJOR_CELLS_up5.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
+        console.log('Found', compatibleCells.length, 'compatible cells in MAJOR_CELLS_up5');
+        
+        if (compatibleCells.length > 0) {
+            const leftCell = new Cycler(compatibleCells).nextItem();
+            const adjustedNewCell = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+            
+            if (phrase.length === 9) {
+                return { phrase: phrase, length: phrase.length };
+            }
+        }
+        
+        attempts++;
+        resolutionCyclerTransposed.resetPermutation();
+    }
+    
+    throw new Error("Failed to generate a valid short iv_iv phrase after maximum attempts");
 }
 
 // Generate IV – iv – phrase - COMPLETE REIMPLEMENTATION
