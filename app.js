@@ -428,7 +428,7 @@ function getPhraseTypeDisplay(phraseType) {
         case 'short_iv_iv': return 'IV to iv';
         case 'ii7_to_v7': return 'II7 to ii';
         case 'iii_to_biii': return 'iii to biii°';
-        case 'biii_to_ii_old': return 'pure biii°';
+        case 'biii_to_ii_old': return 'vi to II7b9';
         case '7sus4': return getChordTypeDisplay(appState.chordType);
         default: return phraseType;
     }
@@ -1212,18 +1212,28 @@ function getIiiToBiiiChordProgression(key) {
 }
 
 function getBiiiToIiOldChordProgression(key) {
-    // Calculate the chord progression biii°
+    // Calculate the chord progression vi to II7b9 / iiø7 to V7b9 (to iim)
     const keySemitones = KEYS[key];
-    const biiiSemitones = (keySemitones + 3) % 12;  // 3 semitones up from tonic
+    const viSemitones = (keySemitones + 9) % 12;  // 9 semitones up from tonic (vi)
+    const iiSemitones = (keySemitones + 2) % 12;  // 2 semitones up from tonic (II)
+    const ivsSemitones = (keySemitones + 6) % 12;   // 6 semitones up from tonic (iv#)
+    const viiSemitones = (keySemitones + 11) % 12;   // 11 semitones up from tonic (VII) - equivalent to 1 semitone down
+
     
-    let biiiKey = null;
+    let viKey = null;
+    let iiKey = null;
+    let ivsKey = null;
+    let viiKey = null;
     
     for (const [k, semitones] of Object.entries(KEYS)) {
-        if (semitones === biiiSemitones) biiiKey = k;
+        if (semitones === viSemitones) viKey = k;
+        if (semitones === iiSemitones) iiKey = k;
+        if (semitones === ivsSemitones) ivsKey = k;
+        if (semitones === viiSemitones) viiKey = k;
     }
     
-    if (biiiKey) {
-        return `${biiiKey}°`;
+    if (viKey && iiKey && ivsKey && viiKey) {
+        return `${viKey}m to ${iiKey}7b9 / ${ivsKey}ø7 to ${viiKey}7b9 (to ${iiKey}m)`;
     }
     return `in the key of ${key}`;
 }

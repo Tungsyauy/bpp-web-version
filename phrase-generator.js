@@ -106,8 +106,8 @@ function initializeCyclers(phraseType) {
         leftCycler = new Cycler(window.BIIICELLS);
         rightCycler = new Cycler(window.BIIICELLS);
     } else if (phraseType === "biii_to_ii_old" || phraseType === "long_biii_to_ii_old") {
-        console.log('Initializing biii_to_ii_old cyclers with BASE_BIIICELLS:', window.BASE_BIIICELLS);
-        leftCycler = new Cycler(window.BASE_BIIICELLS);
+        console.log('Initializing biii_to_ii_old cyclers - left from CELLS_up2, right from BASE_BIIICELLS');
+        leftCycler = new Cycler(window.CELLS_up2);
         rightCycler = new Cycler(window.BASE_BIIICELLS);
     } else if (phraseType === "major" || phraseType === "long_major") {
         leftCycler = new Cycler(MAJOR_CELLS);
@@ -935,7 +935,8 @@ function generateLongIiiToBiiiPhrase(keyName) {
 }
 
 // Generate old biii° to ii phrase (original logic)
-function generateBiiiToIiOldPhrase(keyName) {
+function generateBiiiToIiOldPhrase(keyName) { // Now generates vi to II7b9 phrases
+    // Short version: 1 cell from CELLS_up2 (left, excludes cells starting with "G") + 1 cell from BASE_BIIICELLS (right)
     const maxAttempts = 50; // Limit attempts to avoid infinite loops
     
     // Define the four cells to exclude (from data.js lines 235-238)
@@ -960,19 +961,21 @@ function generateBiiiToIiOldPhrase(keyName) {
             continue; // Try again with a new right cell
         }
         
-        // Find compatible left cells (cells that end with the same pitch class as right cell starts)
-        const compatibleLeft = window.BASE_BIIICELLS.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteRight);
+        // Find compatible left cells from CELLS_up2 (cells that end with the same pitch class as right cell starts)
+        // Filter out cells starting with "G" for the leftmost cell
+        const compatibleLeft = window.CELLS_up2.filter(cell => {
+            const cellEndsWith = cell[cell.length - 1].slice(0, -1);
+            const cellStartsWith = cell[0].slice(0, -1);
+            return cellEndsWith === firstNoteRight && cellStartsWith !== 'G';
+        });
         
         // If no compatible left cells, try a new right cell
         if (compatibleLeft.length === 0) {
             continue; // Try again with a new right cell
         }
         
-        // Found compatible cells, select one
-        let leftCell = leftCycler.nextItem();
-        while (leftCell[leftCell.length - 1].slice(0, -1) !== firstNoteRight) {
-            leftCell = leftCycler.nextItem();
-        }
+        // Found compatible cells, select one from the compatible cells
+        const leftCell = compatibleLeft[Math.floor(Math.random() * compatibleLeft.length)];
         
         // For biii° to ii phrases, use cells directly without octave adjustment to preserve cell shapes
         const adjustedRight = adjustRightCell(leftCell, rightCell);
@@ -982,64 +985,124 @@ function generateBiiiToIiOldPhrase(keyName) {
     }
     
     // If we get here, we couldn't find compatible cells after max attempts
-    console.error('Could not find compatible cells for old biii° to ii phrase after', maxAttempts, 'attempts');
-    throw new Error('Unable to generate old biii° to ii phrase - no compatible cell combinations found');
+    console.error('Could not find compatible cells for vi to II7b9 phrase after', maxAttempts, 'attempts');
+    throw new Error('Unable to generate vi to II7b9 phrase - no compatible cell combinations found');
 }
 
-// Generate long old biii° to ii phrase - similar to long 25 minor approach
+// Generate long vi to II7b9 phrase - similar to long 25 minor approach
 function generateLongBiiiToIiOldPhrase(keyName) {
-    // First generate a short biii° to ii phrase (9 notes)
-    const shortResult = generateBiiiToIiOldPhrase(keyName);
-    let phrase = shortResult.phrase;
+    // Long version: 2 cells from CELLS_up2 (cells 0,1, where cell 0 excludes cells starting with "G") + 2 cells from BASE_BIIICELLS (cells 2,3)
+    const maxAttempts = 50;
+    let attempts = 0;
     
-    // Now add two cells from BASE_BIIICELLS to the left, ensuring connectivity
-    const cellSets = [window.BASE_BIIICELLS, window.BASE_BIIICELLS];  // Two additional cells
-    let usedCells = new Set(); // Track used cells to avoid duplicates
-    
-    // Define the four cells to exclude (from data.js lines 235-238)
-    const excludedCells = [
-        ["D4","B3","C4","D4","D#4"],
-        ["A4","G4","E4","F4","F#4"],
-        ["C4", "F4", "Ab4", "Eb4", "F#4"],
-        ["A4","D5","B4","F#4","D#4"]
-    ];
-    
-    for (let i = 0; i < cellSets.length; i++) {
-        const cellSet = cellSets[i];
-        const firstNoteCurrent = phrase[0].slice(0, -1);  // Get pitch class of first note
-        const compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
-        
-        if (compatibleCells.length > 0) {
-            // Filter out cells that have already been used and exclude the four specific cells
-            const unusedCompatibleCells = compatibleCells.filter(cell => {
-                // Check if cell has been used
-                if (usedCells.has(cell.join(' '))) {
-                    return false;
-                }
+    while (attempts < maxAttempts) {
+        try {
+            // Start with a right cell from BASE_BIIICELLS (this will be cell 3)
+            const rightCell = rightCycler.nextItem();
+            const firstNoteRight = rightCell[0].slice(0, -1); // Remove octave
+            
+            // Define the four cells to exclude from BASE_BIIICELLS (for cells 2 and 3)
+            const excludedCells = [
+                ["D4","B3","C4","D4","D#4"],
+                ["B4","A4","F#4","G4","G#4"],
+                ["C4", "F4", "Ab4", "Eb4", "F#4"],
+                ["A4","D5","B4","F#4","D#4"]
+            ];
+            
+            // Skip any of the four excluded cells for the right cell
+            const isExcludedCell = excludedCells.some(excludedCell => 
+                rightCell.length === excludedCell.length &&
+                rightCell.every((note, index) => note === excludedCell[index])
+            );
+            
+            if (isExcludedCell) {
+                attempts++;
+                continue; // Try again with a new right cell
+            }
+            
+            // Find cell 2 from BASE_BIIICELLS (compatible with cell 3)
+            const compatibleCell2 = window.BASE_BIIICELLS.filter(cell => {
+                // Check if cell ends with the same pitch class as right cell starts
+                const cellEndsWith = cell[cell.length - 1].slice(0, -1);
+                const rightStartsWith = firstNoteRight;
                 
-                // Check if cell is in the excluded list
-                const isExcludedCell = excludedCells.some(excludedCell => 
+                // Also check if this cell is not in the excluded list
+                const isExcluded = excludedCells.some(excludedCell => 
                     cell.length === excludedCell.length &&
                     cell.every((note, index) => note === excludedCell[index])
                 );
                 
-                return !isExcludedCell;
+                return cellEndsWith === rightStartsWith && !isExcluded;
             });
             
-            if (unusedCompatibleCells.length === 0) {
-                throw new Error("No unused compatible cells found for long old biii° to ii phrase");
+            if (compatibleCell2.length === 0) {
+                attempts++;
+                continue; // Try again with a new right cell
             }
             
-            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
-            usedCells.add(leftCell.join(' ')); // Mark this cell as used
-            const adjustedPhrase = adjustRightCell(leftCell, phrase);
-            phrase = leftCell.slice(0, -1).concat(adjustedPhrase);  // Remove last note of left cell, add entire adjusted phrase
-        } else {
-            throw new Error("No compatible cells found for long old biii° to ii phrase");
+            const cell2 = compatibleCell2[Math.floor(Math.random() * compatibleCell2.length)];
+            
+            // Now build the phrase from right to left
+            // Start with cell 3 (right cell)
+            let phrase = [...rightCell];
+            
+            // Add cell 2 (adjusting the connection)
+            const adjustedCell2 = adjustRightCell(cell2, phrase);
+            phrase = cell2.slice(0, -1).concat(adjustedCell2);
+            
+            // Now add two cells from CELLS_up2 (cells 0 and 1)
+            const cellSets = [window.CELLS_up2, window.CELLS_up2];
+            let usedCells = new Set();
+            
+            for (let i = 0; i < cellSets.length; i++) {
+                const cellSet = cellSets[i];
+                const firstNoteCurrent = phrase[0].slice(0, -1);  // Get pitch class of first note
+                
+                // Filter cells based on position: cell 0 (leftmost) excludes cells starting with "G"
+                let compatibleCells;
+                if (i === 0) {
+                    // For cell 0 (leftmost), filter out cells starting with "G"
+                    compatibleCells = cellSet.filter(cell => {
+                        const cellEndsWith = cell[cell.length - 1].slice(0, -1);
+                        const cellStartsWith = cell[0].slice(0, -1);
+                        return cellEndsWith === firstNoteCurrent && cellStartsWith !== 'G';
+                    });
+                } else {
+                    // For cell 1, no additional filtering
+                    compatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
+                }
+                
+                if (compatibleCells.length > 0) {
+                    // Filter out cells that have already been used
+                    const unusedCompatibleCells = compatibleCells.filter(cell => {
+                        return !usedCells.has(cell.join(' '));
+                    });
+                    
+                                if (unusedCompatibleCells.length === 0) {
+                throw new Error("No unused compatible cells found for long vi to II7b9 phrase");
+            }
+                    
+                    const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+                    usedCells.add(leftCell.join(' ')); // Mark this cell as used
+                    const adjustedPhrase = adjustRightCell(leftCell, phrase);
+                    phrase = leftCell.slice(0, -1).concat(adjustedPhrase);
+                        } else {
+            throw new Error("No compatible cells found for long vi to II7b9 phrase");
+        }
+            }
+            
+            return { phrase: phrase, length: phrase.length };
+            
+        } catch (error) {
+            console.error(`Attempt ${attempts + 1} failed:`, error);
+            attempts++;
+                            if (attempts >= maxAttempts) {
+                    throw new Error(`Failed to generate long vi to II7b9 phrase after ${maxAttempts} attempts`);
+                }
         }
     }
     
-    return { phrase: phrase, length: phrase.length };
+    throw new Error(`Failed to generate long vi to II7b9 phrase after ${maxAttempts} attempts`);
 }
 
 // Validate resolution cell - exact match to Python implementation
