@@ -406,12 +406,12 @@ function initializeTransposedCells() {
     BASE_MINOR_B_CELLS = [...BASE_MINOR_B_CELLS_ORIGINAL, ...baseCellsDownPerfectFourth];
     console.log('BASE_MINOR_B_CELLS updated:', BASE_MINOR_B_CELLS.length, 'cells total');
     
-    // Filter out cells that start with 'A'
-    console.log('Filtering out cells that start with "A"...');
+    // Filter out cells that start with 'A' or 'G'
+    console.log('Filtering out cells that start with "A" or "G"...');
     const originalCount = BASE_MINOR_B_CELLS.length;
-    BASE_MINOR_B_CELLS = BASE_MINOR_B_CELLS.filter(cell => !cell[0].startsWith('A'));
+    BASE_MINOR_B_CELLS = BASE_MINOR_B_CELLS.filter(cell => !cell[0].startsWith('A') && !cell[0].startsWith('G'));
     const filteredCount = BASE_MINOR_B_CELLS.length;
-    console.log(`Filtered out ${originalCount - filteredCount} cells starting with "A"`);
+    console.log(`Filtered out ${originalCount - filteredCount} cells starting with "A" or "G"`);
     console.log('BASE_MINOR_B_CELLS after filtering:', BASE_MINOR_B_CELLS.length, 'cells total');
     
     // Update the global MINOR_B_CELLS to reflect the new BASE_MINOR_B_CELLS
