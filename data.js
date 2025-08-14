@@ -182,7 +182,7 @@ const BASE_MINOR_C_CELLS = [
     ["D4", "C4", "G#3", "F3", "E3"],
     //7.31
     ["F5","G5","E5","D5","C5"],
-    ["G5","F5","E5","D5","C5"],
+    //["G5","F5","E5","D5","C5"],
 
     ["G5","F5","C5","G#4","E5"],
     ["G5","F5","C5","D5","E5"],
@@ -416,11 +416,21 @@ function initializeTransposedCells() {
     console.log('BASE_MINOR_B_CELLS updated:', BASE_MINOR_B_CELLS.length, 'cells total');
     
     // Filter out cells that start with 'A' or 'G'
-    console.log('Filtering out cells that start with "A" or "G"...');
+    console.log('Filtering out cells that start with "A", "G", or "C" (except allowlisted ["A4","F4","E4","D4","G4"])...');
     const originalCount = BASE_MINOR_B_CELLS.length;
-    BASE_MINOR_B_CELLS = BASE_MINOR_B_CELLS.filter(cell => !cell[0].startsWith('A') && !cell[0].startsWith('G'));
+    const allowlistedMinorBCell = ["A4","F4","E4","D4","G4"];
+    BASE_MINOR_B_CELLS = BASE_MINOR_B_CELLS.filter(cell => {
+        const isAllowlisted = cell.length === 5 &&
+            cell[0] === allowlistedMinorBCell[0] &&
+            cell[1] === allowlistedMinorBCell[1] &&
+            cell[2] === allowlistedMinorBCell[2] &&
+            cell[3] === allowlistedMinorBCell[3] &&
+            cell[4] === allowlistedMinorBCell[4];
+        if (isAllowlisted) return true;
+        return !cell[0].startsWith('A') && !cell[0].startsWith('G') && !cell[0].startsWith('C');
+    });
     const filteredCount = BASE_MINOR_B_CELLS.length;
-    console.log(`Filtered out ${originalCount - filteredCount} cells starting with "A" or "G"`);
+    console.log(`Filtered out ${originalCount - filteredCount} cells starting with "A", "G", or "C" (with allowlist applied)`);
     console.log('BASE_MINOR_B_CELLS after filtering:', BASE_MINOR_B_CELLS.length, 'cells total');
     
     // Update the global MINOR_B_CELLS to reflect the new BASE_MINOR_B_CELLS
