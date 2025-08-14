@@ -153,7 +153,10 @@ const BASE_MINOR_B_CELLS_ORIGINAL = [
     //["A4","C5","C#5","E5","D5"],
     //["E4","F4","C#4","E4","D4"],
     //8.5
-    ["E5", "D5", "B4", "A4", "G#4"],
+    //["E5", "D5", "B4", "A4", "G#4"],
+    //8.14
+    ["F4","G4","E4","D4","C4"],
+
 
 ];
 
@@ -215,40 +218,40 @@ const PRE_BASE_BIIICELLS = [
     ["D4","C4","B3","A3","C4"],//yes
     ["C4", "Eb4", "B3", "Ab3", "A3"],//yes
     ["D4","B3","C4","D4","D#4"],//yes
-    ["A4","D5","B4","F#4","D#4"], //yes
     ["A4","G4","E4","F4","F#4"] //yes
 ];
 
 // Base cells for biii° to ii phrases
 const BASE_BIIICELLS = [
-    ["D4","D#4","B3","D4","C4"],//yes
-    ["B4","C5","G#4","B4","A4"],//yes
-    ["D4","C4","B3","C4","F4"],//yes
+    ["D4","D#4","B3","D4","C4"],
+    ["B4","C5","G#4","B4","A4"],
+    ["D4","C4","B3","C4","F4"],
     ["G#4","F#4","F4","Eb4","D4"],
     ["B4","A4","G#4","F#4","F4"],
     ["F4","Eb4","D4","C4","B3"],
     ["B4","A4","G#4","A4","C5"],
     ["D#4","F#4","B4","A4","G4"],
-    ["D4","C4","B3","A3","C4"],//yes
+    ["D4","C4","B3","A3","C4"],
     ["D#4","F#4","B4","A4","C5"],
     //8.6
-    ["D#5","F#4","B4","D#5","C5"],
-    ["C5", "Eb4", "Ab4", "C5", "A4"],
-    ["D#4","F#4","D4","B3","C4"],
-    ["C4", "Eb4", "B3", "Ab3", "A3"],//yes
-    ["F#3","B3","D4","A3","C4"],
-    ["Eb4","Ab4","F4","C4","A3"],
-    ["D#5","B4","F#4","D5","C5"],
-    ["C5", "Ab4", "Eb4", "B4", "A4"],
-    ["B3","C4","F4","A4","D4"],
-    ["D4","Eb4","Ab4","C5","F4"],
-
-    ["D4","B3","C4","D4","D#4"],//yes
+    ["D4","B3","C4","D4","D#4"],
     ["B4","A4","F#4","G4","G#4"],
-    ["C4", "F4", "Ab4", "Eb4", "F#4"],
-    ["A4","D5","B4","F#4","D#4"] //yes
-    //["A4","G4","E4","F4","F#4"] //yes
+
 ];
+
+// Long cells for positions 2 and 3 in iii to biii and vi to II7b9 phrases
+const BASE_LONG_BIIICELLS = [
+    ["D#5","F#4","B4","D#5","C5","Eb4", "Ab4", "C5", "A4"],
+    ["D#4","F#4","D4","B3","C4", "Eb4", "B3", "Ab3", "A3"],
+    ["C4", "F4", "Ab4", "Eb4", "F#4","B4","D5","A4","C5"],
+    ["A4","D5","B4","F#4","D#4","Ab4","F4","C4","A3"],
+    ["D#5","B4","F#4","D5","C5", "Ab4", "Eb4", "B4", "A4"],
+    ["B3","C4","F4","A4","D4","Eb4","Ab4","C5","F4"]
+];
+
+// Debug: Log when long cells are defined
+console.log('BASE_LONG_BIIICELLS defined with', BASE_LONG_BIIICELLS.length, 'cells');
+console.log('Sample long cell:', BASE_LONG_BIIICELLS[0]);
 
 // ============================================================================
 // TRANSPOSITION HELPER FUNCTIONS (using music-utils.js functions)
@@ -275,6 +278,8 @@ window.DFB = [...BASE_DFB];
 window.PRE_BIIICELLS = [...PRE_BASE_BIIICELLS];
 window.BASE_BIIICELLS = [...BASE_BIIICELLS];
 window.BIIICELLS = [...BASE_BIIICELLS];
+window.BASE_LONG_BIIICELLS = [...BASE_LONG_BIIICELLS];
+console.log('window.BASE_LONG_BIIICELLS assigned with', window.BASE_LONG_BIIICELLS.length, 'cells');
 
 // Deferred initialization for transposed sets (will be initialized after music-utils.js loads)
 function initializeTransposedCells() {
@@ -361,6 +366,10 @@ function initializeTransposedCells() {
           cell[4] === transposedProblematicCell1[4])
     );
     console.log('CELLS2_down2 generated:', window.CELLS2_down2.length, 'cells');
+    
+    console.log('Generating CELLS2_up2...');
+    window.CELLS2_up2 = transposeCells(window.CELLS2, 2, "C");
+    console.log('CELLS2_up2 generated:', window.CELLS2_up2.length, 'cells');
     
     console.log('Generating BASE_MAJOR_RESOLUTION_CELLS_up5...');
     window.BASE_MAJOR_RESOLUTION_CELLS_up5 = transposeCells(BASE_MAJOR_RESOLUTION_CELLS, 5, "C");
@@ -858,7 +867,7 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         CELLS, CELLS2, MAJOR_CELLS, MAJOR_RESOLUTION_CELLS, MINOR_B_CELLS, MINOR_C_CELLS,
-        TURNAROUND_CELLS_1, DFB,
+        TURNAROUND_CELLS_1, DFB, BASE_LONG_BIIICELLS,
         KEYS, PITCH_CLASSES_SHARP, PITCH_CLASSES_FLAT, FLAT_KEYS, KEY_CHORD_MAP, 
         get_7sus4_chord_display, find_7sus4_generation_key, find_7sus4_target_key_for_display,
         Random7sus4Cycler, RandomKeyCycler, random_7sus4_cycler, random_key_cycler,
