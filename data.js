@@ -101,7 +101,9 @@ const BASE_MAJOR_CELLS = [
     ["E4", "C4", "B3", "A3", "D4"],
     ["C5", "E4", "Eb4", "E4", "B4"],
     ["A4", "C5", "B4", "A4", "G4"],
-    ["C5", "G4", "Ab4", "B4", "A4"]
+    ["C5", "G4", "Ab4", "B4", "A4"],
+    //8.16
+    ["B4", "C5", "G4", "E4", "A4"],
 ];
 
 // Base cells for major resolution (C dominant resolving to F major)
@@ -207,8 +209,17 @@ const BASE_DFB = [
     ["C4", "Eb4", "F#4", "A4", "G4"],
     ["F#4", "A4", "G#4", "F#4", "G4"],
     ["D#4", "F#4", "B4", "A4", "G4"],
-    ["D#4", "A4", "G#4", "F#4", "G4"],
-    ["D#4", "C4", "A3", "F#3", "G3"]
+    //["D#4", "A4", "G#4", "F#4", "G4"],
+    ["D#4", "C4", "A3", "F#3", "G3"],
+    //8.16
+    //["D#4","F#4","A4","F#4","G4"],
+    ["F#4", "A4", "C5", "D#5", "E5"],
+    ["A4", "F#4", "Eb4", "A4", "G4"],
+    ["C5", "A4", "F#4", "D#4", "E4"],
+    ["B4", "A4", "G#4", "A4", "C5"],
+    ["D4", "C4", "B3", "A3", "C4"],
+    //["D4", "C4", "B3", "A3", "G4"],
+    ["D4", "Eb4", "B3", "D4", "C4"],
 ];
 
 // Base cells for iii to biii° phrases (pre-selection)
@@ -236,7 +247,11 @@ const BASE_BIIICELLS = [
     //8.6
     ["D4","B3","C4","D4","D#4"],
     ["B4","A4","F#4","G4","G#4"],
-
+    //8.16
+    ["A4","D5","B4","F#4","D#4"],
+    ["A4","D5","F5","C5","D#5"],
+    ["C4","F4","D4","A3","F#3"],
+    ["C4","F4","Ab4","Eb4","F#4"],
 ];
 
 // Long cells for positions 2 and 3 in iii to biii and vi to II7b9 phrases
@@ -370,6 +385,10 @@ function initializeTransposedCells() {
     console.log('Generating CELLS2_up2...');
     window.CELLS2_up2 = transposeCells(window.CELLS2, 2, "C");
     console.log('CELLS2_up2 generated:', window.CELLS2_up2.length, 'cells');
+    
+    console.log('Generating CELLS2_up5...');
+    window.CELLS2_up5 = transposeCells(window.CELLS2, 5, "C");
+    console.log('CELLS2_up5 generated:', window.CELLS2_up5.length, 'cells');
     
     console.log('Generating BASE_MAJOR_RESOLUTION_CELLS_up5...');
     window.BASE_MAJOR_RESOLUTION_CELLS_up5 = transposeCells(BASE_MAJOR_RESOLUTION_CELLS, 5, "C");

@@ -186,7 +186,11 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "biii_to_ii_old": 9,
         "long_biii_to_ii_old": 17, // Can be 17 (with long cells) or 20 (with regular cells)
         "long_major": 17,
-        "long_7sus4": 17
+        "long_7sus4": 17,
+        "iv7_to_iv_sharp_dim": 9,
+        "long_iv7_to_iv_sharp_dim": 17,
+        "iv_sharp_half_dim_to_vii7": 9,
+        "long_iv_sharp_half_dim_to_vii7": 17
     };
     
     console.log('Initial keyName:', keyName);
@@ -286,6 +290,22 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 phraseLength = result.length;
             } else if (phraseType === "iv_iv") {
                 const result = generateIVIVPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "iv7_to_iv_sharp_dim") {
+                const result = generateShortIV7ToIvSharpDimPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "long_iv7_to_iv_sharp_dim") {
+                const result = generateLongIV7ToIvSharpDimPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "iv_sharp_half_dim_to_vii7") {
+                const result = generateShortIvSharpHalfDimToVii7Phrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
+            } else if (phraseType === "long_iv_sharp_half_dim_to_vii7") {
+                const result = generateLongIvSharpHalfDimToVii7Phrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
             } else {
@@ -840,12 +860,14 @@ function generateIiiToBiiiPhrase(keyName) {
     
     const maxAttempts = 50; // Limit attempts to avoid infinite loops
     
-    // Define the four cells to exclude from right cell selection
+    // Define the cells to exclude from right cell selection
     const excludedCells = [
         ["D4","B3","C4","D4","D#4"],
         ["B4","A4","F#4","G4","G#4"],
         ["C4", "F4", "Ab4", "Eb4", "F#4"],
-        ["A4","D5","B4","F#4","D#4"]
+        ["A4","D5","B4","F#4","D#4"],
+        ["A4","D5","F5","C5","D#5"],
+        ["C4","F4","D4","A3","F#3"]
     ];
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -1033,12 +1055,14 @@ function generateBiiiToIiOldPhrase(keyName) { // Now generates vi to II7b9 phras
     // Short version: 1 cell from CELLS_up2 (left, excludes cells starting with "G") + 1 cell from BASE_BIIICELLS or BASE_LONG_BIIICELLS (right)
     const maxAttempts = 50; // Limit attempts to avoid infinite loops
     
-    // Define the four cells to exclude (from data.js lines 235-238)
+    // Define the cells to exclude (from data.js lines 235-238 and 251-254)
     const excludedCells = [
         ["D4","B3","C4","D4","D#4"],
         ["B4","A4","F#4","G4","G#4"],
         ["C4", "F4", "Ab4", "Eb4", "F#4"],
-        ["A4","D5","B4","F#4","D#4"]
+        ["A4","D5","B4","F#4","D#4"],
+        ["A4","D5","F5","C5","D#5"],
+        ["C4","F4","D4","A3","F#3"]
     ];
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -1204,12 +1228,16 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 console.log('Mode=short. Selected pos3:', rightCell);
             }
             
-            // Define the four cells to exclude from BASE_BIIICELLS (for cells 2 and 3)
+            // Define the cells to exclude from BASE_BIIICELLS (for cells 2 and 3)
             const excludedCells = [
                 ["B4","C5","G#4","B4","A4"],
                 ["D4","C4","B3","C4","F4"],
                 ["D4","C4","B3","A3","C4"],
-                ["C4", "Eb4", "B3", "Ab3", "A3"]
+                ["C4", "Eb4", "B3", "Ab3", "A3"],
+                ["A4","D5","B4","F#4","D#4"],
+                ["A4","D5","F5","C5","D#5"],
+                ["C4","F4","D4","A3","F#3"],
+                ["C4","F4","Ab4","Eb4","F#4"]
             ];
             
             // Skip any of the four excluded cells (check both 5-note and 9-note versions)
@@ -1846,6 +1874,318 @@ function generateIVIVPhrase(keyName) {
     }
     
     throw new Error("Failed to generate a valid iv_iv phrase after maximum attempts");
+}
+
+// Generate short IV7 to #iv° phrase - 2 cells
+function generateShortIV7ToIvSharpDimPhrase(keyName) {
+    console.log('generateShortIV7ToIvSharpDimPhrase called with keyName:', keyName);
+    console.log('BASE_DFB available:', window.DFB ? window.DFB.length : 'undefined');
+    console.log('CELLS2_up5 available:', window.CELLS2_up5 ? window.CELLS2_up5.length : 'undefined');
+    
+    // Create a cycler for the DFB cells (right cell) - this ensures fair distribution
+    const dfbCycler = new Cycler(window.DFB);
+    const maxAttempts = window.DFB.length * 3; // Give each DFB cell multiple chances
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        let rightCell = dfbCycler.nextItem();
+        console.log('Attempt', attempts + 1, 'right cell from DFB:', rightCell);
+        
+        let phrase = rightCell;
+        
+        // Add one cell from CELLS2_up5 (left cell)
+        const firstNoteCurrent = phrase[0].slice(0, -1);
+        console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in CELLS2_up5');
+        
+        const compatibleCells = window.CELLS2_up5.filter(cell => {
+            const endNote = cell[cell.length - 1].slice(0, -1);
+            const startsWithBb = cell[0].slice(0, -1) === 'Bb';
+            
+            // Handle enharmonic equivalents
+            const endsWithCorrectNote = endNote === firstNoteCurrent || 
+                (firstNoteCurrent === 'D#' && endNote === 'Eb') ||
+                (firstNoteCurrent === 'F#' && endNote === 'Gb') ||
+                (firstNoteCurrent === 'G#' && endNote === 'Ab') ||
+                (firstNoteCurrent === 'A#' && endNote === 'Bb') ||
+                (firstNoteCurrent === 'C#' && endNote === 'Db');
+                
+            return endsWithCorrectNote && !startsWithBb;
+        });
+        console.log('Found', compatibleCells.length, 'compatible cells in CELLS2_up5 (excluding Bb starting cells)');
+        
+        if (compatibleCells.length > 0) {
+            const leftCell = new Cycler(compatibleCells).nextItem();
+            const adjustedNewCell = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+            
+            if (phrase.length === 9) {
+                console.log('Successfully generated short IV7 to #iv° phrase:', phrase);
+                console.log('Used DFB cell starting with:', rightCell[0].slice(0, -1));
+                return { phrase: phrase, length: phrase.length };
+            }
+        }
+        
+        attempts++;
+    }
+    
+    throw new Error("Failed to generate a valid short_iv7_to_iv_sharp_dim phrase after maximum attempts");
+}
+
+// Generate long IV7 to #iv° phrase - 4 cells (17 notes)
+function generateLongIV7ToIvSharpDimPhrase(keyName) {
+    console.log('generateLongIV7ToIvSharpDimPhrase called with keyName:', keyName);
+    console.log('BASE_DFB available:', window.DFB ? window.DFB.length : 'undefined');
+    console.log('BASE_BIIICELLS available:', window.BASE_BIIICELLS ? window.BASE_BIIICELLS.length : 'undefined');
+    console.log('CELLS2_up5 available:', window.CELLS2_up5 ? window.CELLS2_up5.length : 'undefined');
+    console.log('CELLS_up5 available:', window.CELLS_up5 ? window.CELLS_up5.length : 'undefined');
+    
+    // Create a cycler for the DFB cells (right cell - position 3) - ensures fair distribution
+    const dfbCycler = new Cycler(window.DFB);
+    const maxAttempts = window.DFB.length * 3; // Give each DFB cell multiple chances
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        // Start with position 3 (rightmost) from BASE_DFB
+        let rightCell = dfbCycler.nextItem();
+        console.log('Attempt', attempts + 1, 'position 3 cell from DFB:', rightCell);
+        
+        let phrase = rightCell;
+        
+        // Define cell sets for positions 2, 1, 0 (right to left)
+        const cellSets = [
+            window.BASE_BIIICELLS,  // Position 2
+            window.CELLS2_up5,      // Position 1  
+            window.CELLS_up5        // Position 0 (leftmost)
+        ];
+        
+        let validPhrase = true;
+        
+        // Track used cells per cell set to avoid duplicates within the same set
+        let usedCellsPerSet = {
+            'BASE_BIIICELLS': new Set(),
+            'CELLS2_up5': new Set(),
+            'CELLS_up5': new Set()
+        };
+        
+        for (let i = 0; i < cellSets.length; i++) {
+            const cellSet = cellSets[i];
+            const cellSetName = i === 0 ? 'BASE_BIIICELLS' : (i === 1 ? 'CELLS2_up5' : 'CELLS_up5');
+            const position = 2 - i; // Position 2, 1, 0
+            
+            const firstNoteCurrent = phrase[0].slice(0, -1);
+            console.log(`Looking for cells ending with pitch class: ${firstNoteCurrent} in ${cellSetName} (position ${position})`);
+            
+            const compatibleCells = cellSet.filter(cell => {
+                const endNote = cell[cell.length - 1].slice(0, -1);
+                
+                // Handle enharmonic equivalents
+                const endsWithCorrectNote = endNote === firstNoteCurrent || 
+                    (firstNoteCurrent === 'D#' && endNote === 'Eb') ||
+                    (firstNoteCurrent === 'F#' && endNote === 'Gb') ||
+                    (firstNoteCurrent === 'G#' && endNote === 'Ab') ||
+                    (firstNoteCurrent === 'A#' && endNote === 'Bb') ||
+                    (firstNoteCurrent === 'C#' && endNote === 'Db');
+                
+                // Filter out Bb starting cells for position 0 (leftmost cell)
+                if (position === 0) {
+                    const startsWithBb = cell[0].slice(0, -1) === 'Bb';
+                    return endsWithCorrectNote && !startsWithBb;
+                }
+                return endsWithCorrectNote;
+            });
+            
+            console.log(`Found ${compatibleCells.length} compatible cells in ${cellSetName} (position ${position})`);
+            
+            if (compatibleCells.length === 0) {
+                console.log('No compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            // Filter out cells that have already been used within this specific cell set
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            console.log(`Found ${unusedCompatibleCells.length} unused compatible cells in ${cellSetName}`);
+            
+            if (unusedCompatibleCells.length === 0) {
+                console.log('No unused compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
+            const adjustedNewCell = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+            
+            console.log(`Added position ${position} cell, phrase length now: ${phrase.length}`);
+        }
+        
+        if (validPhrase && phrase.length === 17) {
+            console.log('Successfully generated long IV7 to #iv° phrase:', phrase);
+            console.log('Used DFB cell starting with:', rightCell[0].slice(0, -1));
+            return { phrase: phrase, length: phrase.length };
+        }
+        
+        attempts++;
+    }
+    
+    throw new Error("Failed to generate a valid long_iv7_to_iv_sharp_dim phrase after maximum attempts");
+}
+
+// Generate short #ivø7 to VII7 phrase - 2 cells
+function generateShortIvSharpHalfDimToVii7Phrase(keyName) {
+    console.log('generateShortIvSharpHalfDimToVii7Phrase called with keyName:', keyName);
+    console.log('BASE_DFB available:', window.DFB ? window.DFB.length : 'undefined');
+    console.log('CELLS2_up2 available:', window.CELLS2_up2 ? window.CELLS2_up2.length : 'undefined');
+    
+    // Create a cycler for the DFB cells (right cell) - ensures fair distribution
+    const dfbCycler = new Cycler(window.DFB);
+    const maxAttempts = window.DFB.length * 3; // Give each DFB cell multiple chances
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        let rightCell = dfbCycler.nextItem();
+        console.log('Attempt', attempts + 1, 'right cell from DFB:', rightCell);
+        
+        let phrase = rightCell;
+        
+        // Add one cell from CELLS2_up2 (left cell)
+        const firstNoteCurrent = phrase[0].slice(0, -1);
+        console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in CELLS2_up2');
+        
+        const compatibleCells = window.CELLS2_up2.filter(cell => {
+            const endNote = cell[cell.length - 1].slice(0, -1);
+            const startsWithG = cell[0].slice(0, -1) === 'G';
+            
+            // Handle enharmonic equivalents
+            const endsWithCorrectNote = endNote === firstNoteCurrent || 
+                (firstNoteCurrent === 'D#' && endNote === 'Eb') ||
+                (firstNoteCurrent === 'F#' && endNote === 'Gb') ||
+                (firstNoteCurrent === 'G#' && endNote === 'Ab') ||
+                (firstNoteCurrent === 'A#' && endNote === 'Bb') ||
+                (firstNoteCurrent === 'C#' && endNote === 'Db');
+            
+            // Filter out cells that start with G for the leftmost cell
+            return endsWithCorrectNote && !startsWithG;
+        });
+        console.log('Found', compatibleCells.length, 'compatible cells in CELLS2_up2');
+        
+        if (compatibleCells.length > 0) {
+            const leftCell = new Cycler(compatibleCells).nextItem();
+            const adjustedNewCell = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+            
+            if (phrase.length === 9) {
+                console.log('Successfully generated short #ivø7 to VII7 phrase:', phrase);
+                console.log('Used DFB cell starting with:', rightCell[0].slice(0, -1));
+                return { phrase: phrase, length: phrase.length };
+            }
+        }
+        
+        attempts++;
+    }
+    
+    throw new Error("Failed to generate a valid short_iv_sharp_half_dim_to_vii7 phrase after maximum attempts");
+}
+
+// Generate long #ivø7 to VII7 phrase - 4 cells (17 notes)
+function generateLongIvSharpHalfDimToVii7Phrase(keyName) {
+    console.log('generateLongIvSharpHalfDimToVii7Phrase called with keyName:', keyName);
+    console.log('BASE_DFB available:', window.DFB ? window.DFB.length : 'undefined');
+    console.log('BASE_BIIICELLS available:', window.BASE_BIIICELLS ? window.BASE_BIIICELLS.length : 'undefined');
+    console.log('CELLS2_up2 available:', window.CELLS2_up2 ? window.CELLS2_up2.length : 'undefined');
+    console.log('CELLS_up2 available:', window.CELLS_up2 ? window.CELLS_up2.length : 'undefined');
+    
+    // Create a cycler for the DFB cells (right cell - position 3) - ensures fair distribution
+    const dfbCycler = new Cycler(window.DFB);
+    const maxAttempts = window.DFB.length * 3; // Give each DFB cell multiple chances
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        // Start with position 3 (rightmost) from BASE_DFB
+        let rightCell = dfbCycler.nextItem();
+        console.log('Attempt', attempts + 1, 'position 3 cell from DFB:', rightCell);
+        
+        let phrase = rightCell;
+        
+        // Define cell sets for positions 2, 1, 0 (right to left)
+        const cellSets = [
+            window.BASE_BIIICELLS,  // Position 2
+            window.CELLS2_up2,      // Position 1  
+            window.CELLS_up2        // Position 0 (leftmost)
+        ];
+        
+        let validPhrase = true;
+        
+        // Track used cells per cell set to avoid duplicates within the same set
+        let usedCellsPerSet = {
+            'BASE_BIIICELLS': new Set(),
+            'CELLS2_up2': new Set(),
+            'CELLS_up2': new Set()
+        };
+        
+        for (let i = 0; i < cellSets.length; i++) {
+            const cellSet = cellSets[i];
+            const cellSetName = i === 0 ? 'BASE_BIIICELLS' : (i === 1 ? 'CELLS2_up2' : 'CELLS_up2');
+            const position = 2 - i; // Position 2, 1, 0
+            
+            const firstNoteCurrent = phrase[0].slice(0, -1);
+            console.log(`Looking for cells ending with pitch class: ${firstNoteCurrent} in ${cellSetName} (position ${position})`);
+            
+            const compatibleCells = cellSet.filter(cell => {
+                const endNote = cell[cell.length - 1].slice(0, -1);
+                
+                // Handle enharmonic equivalents
+                const endsWithCorrectNote = endNote === firstNoteCurrent || 
+                    (firstNoteCurrent === 'D#' && endNote === 'Eb') ||
+                    (firstNoteCurrent === 'F#' && endNote === 'Gb') ||
+                    (firstNoteCurrent === 'G#' && endNote === 'Ab') ||
+                    (firstNoteCurrent === 'A#' && endNote === 'Bb') ||
+                    (firstNoteCurrent === 'C#' && endNote === 'Db');
+                
+                // Filter out G starting cells for position 0 (leftmost cell)
+                if (position === 0) {
+                    const startsWithG = cell[0].slice(0, -1) === 'G';
+                    return endsWithCorrectNote && !startsWithG;
+                }
+                return endsWithCorrectNote;
+            });
+            
+            console.log(`Found ${compatibleCells.length} compatible cells in ${cellSetName} (position ${position})`);
+            
+            if (compatibleCells.length === 0) {
+                console.log('No compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            // Filter out cells that have already been used within this specific cell set
+            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            console.log(`Found ${unusedCompatibleCells.length} unused compatible cells in ${cellSetName}`);
+            
+            if (unusedCompatibleCells.length === 0) {
+                console.log('No unused compatible cells found, breaking');
+                validPhrase = false;
+                break;
+            }
+            
+            const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            usedCellsPerSet[cellSetName].add(leftCell.join(' ')); // Mark this cell as used in this set
+            const adjustedNewCell = adjustRightCell(leftCell, phrase);
+            phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+            console.log(`Added ${cellSetName} cell at position ${position}, phrase length now: ${phrase.length}`);
+        }
+        
+        if (validPhrase && phrase.length === 17) {
+            console.log('Successfully generated long #ivø7 to VII7 phrase:', phrase);
+            console.log('Used DFB cell starting with:', rightCell[0].slice(0, -1));
+            return { phrase: phrase, length: phrase.length };
+        }
+        
+        attempts++;
+    }
+    
+    throw new Error("Failed to generate a valid long_iv_sharp_half_dim_to_vii7 phrase after maximum attempts");
 }
 
 // Test function to verify long cells are available

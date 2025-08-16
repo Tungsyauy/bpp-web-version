@@ -184,14 +184,12 @@ function setupEventListeners() {
     });
 
             document.getElementById('biii-to-ii-btn').addEventListener('click', () => {
-            appState.phraseType = 'iii_to_biii';
-            showScreen('length');
+            showScreen('biii-to-ii-type');
         });
-        
-        document.getElementById('biii-to-ii-old-btn').addEventListener('click', () => {
-            appState.phraseType = 'biii_to_ii_old';
-            showScreen('length');
-        });
+
+    document.getElementById('i-dim-to-i-btn').addEventListener('click', () => {
+        showScreen('i-dim-to-i-type');
+    });
 
     document.getElementById('backdoor-25-btn').addEventListener('click', () => {
         appState.phraseType = 'backdoor_25';
@@ -205,6 +203,28 @@ function setupEventListeners() {
 
     document.getElementById('iv-iv-btn').addEventListener('click', () => {
         appState.phraseType = 'iv_iv';
+        showScreen('length');
+    });
+
+    // biii° to ii sub-type selection
+    document.getElementById('iii-to-biii-btn').addEventListener('click', () => {
+        appState.phraseType = 'iii_to_biii';
+        showScreen('length');
+    });
+
+    document.getElementById('vi-to-ii7b9-btn').addEventListener('click', () => {
+        appState.phraseType = 'biii_to_ii_old';
+        showScreen('length');
+    });
+
+    // i° to I sub-type selection
+    document.getElementById('iv7-to-iv-sharp-dim-btn').addEventListener('click', () => {
+        appState.phraseType = 'iv7_to_iv_sharp_dim';
+        showScreen('length');
+    });
+
+    document.getElementById('iv-sharp-half-dim-to-vii7-btn').addEventListener('click', () => {
+        appState.phraseType = 'iv_sharp_half_dim_to_vii7';
         showScreen('length');
     });
 
@@ -281,11 +301,17 @@ function setupEventListeners() {
     });
     document.getElementById('chord-type-return').addEventListener('click', () => showScreen('phrase-type'));
     document.getElementById('25-type-return').addEventListener('click', () => showScreen('phrase-type'));
+    document.getElementById('biii-to-ii-type-return').addEventListener('click', () => showScreen('phrase-type'));
+    document.getElementById('i-dim-to-i-type-return').addEventListener('click', () => showScreen('phrase-type'));
             document.getElementById('length-return').addEventListener('click', () => {
             if (appState.phraseType === '7sus4') {
                 showScreen('chord-type');
             } else if (appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' || appState.phraseType === 'backdoor_25' || appState.phraseType === 'deceptive_25') {
                 showScreen('25-type');
+            } else if (appState.phraseType === 'iii_to_biii' || appState.phraseType === 'biii_to_ii_old') {
+                showScreen('biii-to-ii-type');
+            } else if (appState.phraseType === 'iv7_to_iv_sharp_dim' || appState.phraseType === 'iv_sharp_half_dim_to_vii7') {
+                showScreen('i-dim-to-i-type');
             } else {
                 showScreen('phrase-type');
             }
@@ -294,7 +320,9 @@ function setupEventListeners() {
                     if (appState.phraseType === '7sus4' || appState.phraseType === 'major' || 
             appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
             appState.phraseType === 'iii_to_biii' || appState.phraseType === 'biii_to_ii_old' || appState.phraseType === 'backdoor_25' ||
-            appState.phraseType === 'deceptive_25' || appState.phraseType === 'iv_iv') {
+            appState.phraseType === 'deceptive_25' || appState.phraseType === 'iv_iv' ||
+            appState.phraseType === 'iv7_to_iv_sharp_dim' || appState.phraseType === 'iv_sharp_half_dim_to_vii7' ||
+            appState.phraseType === 'long_iv_sharp_half_dim_to_vii7') {
                 showScreen('length');
             } else {
                 showScreen('phrase-type');
@@ -405,7 +433,7 @@ function updateScreenTitles() {
 
     // Update length screen title
     if (appState.mode === 'designate' && appState.selectedKey) {
-        let phraseTypeDisplay = getPhraseTypeDisplay(appState.phraseType);
+        let phraseTypeDisplay = getChordProgressionDisplayForTitle(appState.phraseType, appState.selectedKey);
         document.getElementById('length-title').textContent = 
             `Key of ${appState.selectedKey}: ${phraseTypeDisplay}`;
     } else if (appState.mode === 'random') {
@@ -429,9 +457,24 @@ function getPhraseTypeDisplay(phraseType) {
         case 'ii7_to_v7': return 'II7 to ii';
         case 'iii_to_biii': return 'iii to biii°';
         case 'biii_to_ii_old': return 'vi to II7b9';
+        case 'iv7_to_iv_sharp_dim': return 'IV7 to #iv°';
+        case 'long_iv7_to_iv_sharp_dim': return 'IV7 to #iv°';
+        case 'iv_sharp_half_dim_to_vii7': return '#ivø7 to VII7';
+        case 'long_iv_sharp_half_dim_to_vii7': return '#ivø7 to VII7';
         case '7sus4': return getChordTypeDisplay(appState.chordType);
         default: return phraseType;
     }
+}
+
+function getChordProgressionDisplayForTitle(phraseType, key) {
+    // For phrase types that have specific chord progressions, use them
+    if (phraseType === 'iv7_to_iv_sharp_dim' || phraseType === 'long_iv7_to_iv_sharp_dim') {
+        return getIV7ToIvSharpDimChordProgression(key);
+    } else if (phraseType === 'iv_sharp_half_dim_to_vii7' || phraseType === 'long_iv_sharp_half_dim_to_vii7') {
+        return getIvSharpHalfDimToVii7ChordProgression(key);
+    }
+    // For other phrase types, fall back to the regular display
+    return getPhraseTypeDisplay(phraseType);
 }
 
 function getChordTypeDisplay(chordType) {
@@ -834,9 +877,13 @@ function getFinalPhraseType(useRandomCycling = false) {
         return appState.length === 'short' ? 'short_deceptive_25' : 'deceptive_25';
     } else if (appState.phraseType === 'iv_iv') {
         return appState.length === 'short' ? 'short_iv_iv' : 'iv_iv';
-    } else {
-        return appState.phraseType;
-    }
+            } else if (appState.phraseType === 'iv7_to_iv_sharp_dim') {
+            return appState.length === 'short' ? 'iv7_to_iv_sharp_dim' : 'long_iv7_to_iv_sharp_dim';
+        } else if (appState.phraseType === 'iv_sharp_half_dim_to_vii7') {
+            return appState.length === 'short' ? 'iv_sharp_half_dim_to_vii7' : 'long_iv_sharp_half_dim_to_vii7';
+        } else {
+            return appState.phraseType;
+        }
 }
 
 function generatePhraseData(phraseType, selectedKey) {
@@ -916,6 +963,10 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getII7ToV7ChordProgression(selectedKey);
         } else if (phraseType === "iii_to_biii" || phraseType === "long_iii_to_biii") {
             return getIiiToBiiiChordProgression(selectedKey);
+        } else if (phraseType === "iv7_to_iv_sharp_dim" || phraseType === "long_iv7_to_iv_sharp_dim") {
+            return getIV7ToIvSharpDimChordProgression(selectedKey);
+        } else if (phraseType === "iv_sharp_half_dim_to_vii7" || phraseType === "long_iv_sharp_half_dim_to_vii7") {
+            return getIvSharpHalfDimToVii7ChordProgression(selectedKey);
         } else if (phraseType === "biii_to_ii_old" || phraseType === "long_biii_to_ii_old") {
             return getBiiiToIiOldChordProgression(selectedKey);
         } else if (phraseType === "backdoor_25" || phraseType === "short_backdoor_25") {
@@ -972,6 +1023,10 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getII7ToV7ChordProgression(generatedKey);
         } else if (phraseType === "iii_to_biii" || phraseType === "long_iii_to_biii") {
             return getIiiToBiiiChordProgression(generatedKey);
+        } else if (phraseType === "iv7_to_iv_sharp_dim" || phraseType === "long_iv7_to_iv_sharp_dim") {
+            return getIV7ToIvSharpDimChordProgression(generatedKey);
+        } else if (phraseType === "iv_sharp_half_dim_to_vii7" || phraseType === "long_iv_sharp_half_dim_to_vii7") {
+            return getIvSharpHalfDimToVii7ChordProgression(generatedKey);
         } else if (phraseType === "biii_to_ii_old" || phraseType === "long_biii_to_ii_old") {
             return getBiiiToIiOldChordProgression(generatedKey);
         } else if (phraseType === "backdoor_25" || phraseType === "short_backdoor_25") {
@@ -1163,6 +1218,55 @@ function getRhythmChanges56ChordProgression(key) {
     
     if (ivKey && sharpIvKey) {
         return `${key}7 - ${ivKey}7 ${sharpIvKey}dim`;
+    }
+    return `in the key of ${key}`;
+}
+
+function getIV7ToIvSharpDimChordProgression(key) {
+    // Calculate IV7 to #iv° progression with resolution targets
+    // IV7 = perfect fourth up from tonic
+    // #iv° = tritone up from tonic  
+    // Resolution targets: C (tonic) and G (dominant)
+    const keySemitones = KEYS[key];
+    const ivSemitones = (keySemitones + 5) % 12;  // 5 semitones up from tonic (perfect fourth)
+    const sharpIvSemitones = (keySemitones + 6) % 12;  // 6 semitones up from tonic (tritone)
+    const dominantSemitones = (keySemitones + 7) % 12;  // 7 semitones up from tonic (dominant)
+    
+    let ivKey = null;
+    let sharpIvKey = null;
+    let dominantKey = null;
+    
+    for (const [k, semitones] of Object.entries(KEYS)) {
+        if (semitones === ivSemitones) ivKey = k;
+        if (semitones === sharpIvSemitones) sharpIvKey = k;
+        if (semitones === dominantSemitones) dominantKey = k;
+    }
+    
+    if (ivKey && sharpIvKey && dominantKey) {
+        return `${ivKey}7 to ${sharpIvKey}° (to ${key}/${dominantKey})`;
+    }
+    return `in the key of ${key}`;
+}
+
+function getIvSharpHalfDimToVii7ChordProgression(key) {
+    // Calculate #ivø7 to VII7 progression with resolution target
+    // #ivø7 = tritone up from tonic (6 semitones) + half-diminished 7th
+    // VII7 = major 7th up from tonic (11 semitones) + dominant 7th
+    // Resolution target: tonic
+    const keySemitones = KEYS[key];
+    const sharpIvSemitones = (keySemitones + 6) % 12;  // 6 semitones up from tonic (tritone)
+    const viiSemitones = (keySemitones + 11) % 12;     // 11 semitones up from tonic (major 7th)
+    
+    let sharpIvKey = null;
+    let viiKey = null;
+    
+    for (const [k, semitones] of Object.entries(KEYS)) {
+        if (semitones === sharpIvSemitones) sharpIvKey = k;
+        if (semitones === viiSemitones) viiKey = k;
+    }
+    
+    if (sharpIvKey && viiKey) {
+        return `${sharpIvKey}ø7 to ${viiKey}7 (to ${key})`;
     }
     return `in the key of ${key}`;
 }
