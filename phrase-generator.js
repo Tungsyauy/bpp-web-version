@@ -174,8 +174,8 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "long_25_minor": 17,
         "backdoor_25": 17,
         "short_backdoor_25": 9,
-        "deceptive_25": 17,
-        "short_deceptive_25": 9,
+        "tritone_sub_25_major": 17,
+        "tritone_sub_25_minor": 17,
         "iv_iv": 17,
         "short_iv_iv": 9,
         "turnaround": 17,
@@ -276,12 +276,12 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 const result = generateShortBackdoor25Phrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
-            } else if (phraseType === "deceptive_25") {
-                const result = generateDeceptive25Phrase(keyName);
+            } else if (phraseType === "tritone_sub_25_major") {
+                const result = generateTritoneSub25MajorPhrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
-            } else if (phraseType === "short_deceptive_25") {
-                const result = generateShortDeceptive25Phrase(keyName);
+            } else if (phraseType === "tritone_sub_25_minor") {
+                const result = generateTritoneSub25MinorPhrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
             } else if (phraseType === "short_iv_iv") {
@@ -364,7 +364,7 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 resolutionCycler.resetPermutation();
             } else if (phraseType === "ii7_to_v7") {
                 resolutionCycler.resetPermutation();
-            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv" || phraseType === "short_iv_iv") {
+            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv" || phraseType === "short_iv_iv" || phraseType === "tritone_sub_25_major" || phraseType === "tritone_sub_25_minor") {
                 resolutionCycler.resetPermutation();
             }
             
@@ -379,7 +379,7 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 resolutionCycler.resetPermutation();
             } else if (phraseType === "ii7_to_v7") {
                 resolutionCycler.resetPermutation();
-            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv" || phraseType === "short_iv_iv") {
+            } else if (phraseType === "backdoor_25" || phraseType === "iv_iv" || phraseType === "short_iv_iv" || phraseType === "tritone_sub_25_major" || phraseType === "tritone_sub_25_minor") {
                 resolutionCycler.resetPermutation();
             }
         }
@@ -1300,7 +1300,7 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 
                 // Filter cells based on position: cell 0 (leftmost) excludes cells starting with "G"
                 let compatibleCells;
-                if (i === 0) {
+                if (i === 1) {
                     // For cell 0 (leftmost), filter out cells starting with "G"
                     compatibleCells = cellSet.filter(cell => {
                         const cellEndsPitch = noteToPitch(cell[cell.length - 1])[0];
@@ -1328,6 +1328,59 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                     }
                     
                     const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+                    
+                    // Check if the long cell is one of the problematic ones and if the selected cell matches the forbidden pattern
+                    // This constraint should be applied to the second cell (i === 0) which comes after the long cell
+                    if (i === 0) {
+                        console.log('Checking constraint for i === 0 (second cell)');
+                        console.log('Current rightCell (long cell):', rightCell);
+                        console.log('Selected leftCell:', leftCell);
+                        
+                        const problematicLongCells = [
+                            ["D#5","F#4","B4","D#5","C5","Eb4", "Ab4", "C5", "A4"],
+                            ["D#5","B4","F#4","D5","C5", "Ab4", "Eb4", "B4", "A4"],
+                            ["B3","C4","F4","A4","D4","Eb4","Ab4","C5","F4"]
+                        ];
+                        
+                        const forbiddenPatterns = [
+                            ["A5", "G5", "F#5", "G5", "D#5"],
+                            ["C5", "E4", "Eb4", "E4", "B4"]
+                        ];
+                        
+                        // Check if current long cell is problematic
+                        const isProblematicLongCell = problematicLongCells.some(problematicCell => {
+                            const matches = rightCell.length === 9 && rightCell.every((note, index) => note === problematicCell[index]);
+                            if (matches) {
+                                console.log('Found problematic long cell match:', problematicCell);
+                            }
+                            return matches;
+                        });
+                        
+                        // Check if selected cell matches any forbidden pattern (pitch class only)
+                        const selectedCellPitchClasses = leftCell.map(note => noteToPitch(note)[0]);
+                        const matchesForbiddenPattern = forbiddenPatterns.some(forbiddenPattern => {
+                            const forbiddenPitchClasses = forbiddenPattern.map(note => noteToPitch(note)[0]);
+                            return selectedCellPitchClasses.every((pitchClass, index) => 
+                                pitchClass === forbiddenPitchClasses[index]
+                            );
+                        });
+                        
+                        console.log('Selected cell pitch classes:', selectedCellPitchClasses);
+                        console.log('Forbidden patterns pitch classes:', forbiddenPatterns.map(pattern => pattern.map(note => noteToPitch(note)[0])));
+                        console.log('Is problematic long cell:', isProblematicLongCell);
+                        console.log('Matches forbidden pattern:', matchesForbiddenPattern);
+                        
+                        // If both conditions are true, skip this cell and try another
+                        if (isProblematicLongCell && matchesForbiddenPattern) {
+                            console.log('Skipping forbidden cell combination:', leftCell);
+                            console.log('Problematic long cell detected:', rightCell);
+                            // Remove this cell from used cells and try again
+                            usedCells.delete(leftCell.join(' '));
+                            attempts++;
+                            continue;
+                        }
+                    }
+                    
                     usedCells.add(leftCell.join(' ')); // Mark this cell as used
                     
                     // Add the cell to the phrase (adjusting the connection)
@@ -1662,113 +1715,208 @@ function generateShortBackdoor25Phrase(keyName) {
     throw new Error("Failed to generate a valid short_backdoor_25 phrase after maximum attempts");
 }
 
-// Generate deceptive 25 phrase - same as 251 minor but in different key
-function generateDeceptive25Phrase(keyName) {
-    // Map the target key to the source key for 251 minor
-    const keyToSourceKey = {
-        "C": "E",   // Key of C uses 251 minor from key of E
-        "G": "B",   // Key of G uses 251 minor from key of B
-        "D": "F#",  // Key of D uses 251 minor from key of F#
-        "A": "C#",  // Key of A uses 251 minor from key of C#
-        "E": "Ab",  // Key of E uses 251 minor from key of Ab
-        "B": "Eb",  // Key of B uses 251 minor from key of Eb
-        "F#": "Bb", // Key of F# uses 251 minor from key of Bb
-        "Db": "F",  // Key of Db uses 251 minor from key of F
-        "Ab": "C",  // Key of Ab uses 251 minor from key of C
-        "Eb": "G",  // Key of Eb uses 251 minor from key of G
-        "Bb": "D",  // Key of Bb uses 251 minor from key of D
-        "F": "A"    // Key of F uses 251 minor from key of A
-    };
+// Generate tritone-sub 25 major phrase
+function generateTritoneSub25MajorPhrase(keyName) {
+    console.log('generateTritoneSub25MajorPhrase called with keyName:', keyName);
     
-    const sourceKey = keyToSourceKey[keyName];
-    if (!sourceKey) {
-        throw new Error(`No source key mapping found for deceptive 25 in key ${keyName}`);
+    // Ensure transposed cells are initialized (same fallback as other functions)
+    if (!window.CELLS_up6 && typeof initializeTransposedCells === 'function') {
+        console.log('CELLS_up6 not available, calling initializeTransposedCells...');
+        initializeTransposedCells();
     }
     
-    // Save current cyclers
-    const originalLeftCycler = leftCycler;
-    const originalRightCycler = rightCycler;
-    const originalResolutionCycler = resolutionCycler;
+    // Check if required cell sets are available
+    if (!window.CELLS_up6) {
+        console.error('CELLS_up6 not available');
+        throw new Error('CELLS_up6 not initialized');
+    }
     
-    // Initialize cyclers for long_25_minor to generate the source phrase
-    initializeCyclers("long_25_minor");
+    const maxAttempts = 100;
+    let attempts = 0;
     
-    // Generate the 251 minor phrase in the source key
-    console.log(`Generating deceptive 25: source key = ${sourceKey}, target key = ${keyName}`);
-    const sourceResult = generateLong25MinorPhrase(sourceKey);
-    console.log(`Generated phrase in source key ${sourceKey}:`, sourceResult.phrase);
+    while (attempts < maxAttempts) {
+        try {
+            // Position 3 (Resolution): Uses MAJOR_RESOLUTION_CELLS - the final resolution cell
+            const resolutionCycler = new Cycler(MAJOR_RESOLUTION_CELLS);
+            let resolutionCell = resolutionCycler.nextItem();
+            console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
+            
+            let phrase = [...resolutionCell];
+            
+            // Position 2: Uses window.CELLS_up6
+            const firstNoteCurrent = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in CELLS_up6');
+            
+            const compatibleCellsUp6 = window.CELLS_up6.filter(cell => 
+                cell[cell.length - 1].slice(0, -1) === firstNoteCurrent
+            );
+            console.log('Found', compatibleCellsUp6.length, 'compatible cells in CELLS_up6');
+            
+            if (compatibleCellsUp6.length === 0) {
+                console.log('No compatible cells found in CELLS_up6, retrying...');
+                attempts++;
+                continue;
+            }
+            
+            const cellUp6 = new Cycler(compatibleCellsUp6).nextItem();
+            const adjustedCellUp6 = adjustRightCell(cellUp6, phrase);
+            phrase = cellUp6.slice(0, -1).concat(adjustedCellUp6);
+            
+            // Position 1: Uses CELLS2 - standard cells with no filtering
+            const firstNoteCurrent2 = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent2, 'in CELLS2');
+            
+            const compatibleCells2 = CELLS2.filter(cell => 
+                cell[cell.length - 1].slice(0, -1) === firstNoteCurrent2
+            );
+            console.log('Found', compatibleCells2.length, 'compatible cells in CELLS2');
+            
+            if (compatibleCells2.length === 0) {
+                console.log('No compatible cells found in CELLS2, retrying...');
+                attempts++;
+                continue;
+            }
+            
+            const cell2 = new Cycler(compatibleCells2).nextItem();
+            const adjustedCell2 = adjustRightCell(cell2, phrase);
+            phrase = cell2.slice(0, -1).concat(adjustedCell2);
+            
+            // Position 0 (Leftmost): Uses CELLS_FILTERED_NO_E - cells that don't start with E
+            const firstNoteCurrent3 = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent3, 'in CELLS_FILTERED_NO_E');
+            
+            const compatibleCellsFiltered = window.CELLS_FILTERED_NO_E.filter(cell => 
+                cell[cell.length - 1].slice(0, -1) === firstNoteCurrent3
+            );
+            console.log('Found', compatibleCellsFiltered.length, 'compatible cells in CELLS_FILTERED_NO_E');
+            
+            if (compatibleCellsFiltered.length === 0) {
+                console.log('No compatible cells found in CELLS_FILTERED_NO_E, retrying...');
+                attempts++;
+                continue;
+            }
+            
+            const cellFiltered = new Cycler(compatibleCellsFiltered).nextItem();
+            const adjustedCellFiltered = adjustRightCell(cellFiltered, phrase);
+            phrase = cellFiltered.slice(0, -1).concat(adjustedCellFiltered);
+            
+            // Validate the final phrase
+            if (phrase.length === 17) {
+                console.log('Generated tritone-sub 25 major phrase:', phrase);
+                return { phrase: phrase, length: phrase.length };
+            }
+            
+            attempts++;
+            
+        } catch (error) {
+            console.error('Error in attempt', attempts + 1, ':', error);
+            attempts++;
+        }
+    }
     
-    // Restore original cyclers
-    leftCycler = originalLeftCycler;
-    rightCycler = originalRightCycler;
-    resolutionCycler = originalResolutionCycler;
-    
-    // Transpose the phrase to the target key
-    const targetSemitones = KEYS[keyName];
-    const sourceSemitones = KEYS[sourceKey];
-    const transposition = (targetSemitones - sourceSemitones + 12) % 12;
-    console.log(`Transposition: ${targetSemitones} - ${sourceSemitones} = ${transposition} semitones`);
-    
-    const transposedPhrase = sourceResult.phrase.map(note => transposeNote(note, transposition, "C"));
-    console.log(`Transposed phrase:`, transposedPhrase);
-    
-    // Apply final modulation: one semitone down to fix the key issue
-    const finalPhrase = transposedPhrase.map(note => transposeNote(note, -1, "C"));
-    console.log(`Final phrase after -1 semitone adjustment:`, finalPhrase);
-    
-    return { phrase: finalPhrase, length: finalPhrase.length };
+    throw new Error("Failed to generate a valid tritone-sub 25 major phrase after maximum attempts");
 }
 
-// Generate short deceptive 25 phrase - same as short 251 minor but in different key
-function generateShortDeceptive25Phrase(keyName) {
-    // Map the target key to the source key for 251 minor
-    const keyToSourceKey = {
-        "C": "E",   // Key of C uses 251 minor from key of E
-        "G": "B",   // Key of G uses 251 minor from key of B
-        "D": "F#",  // Key of D uses 251 minor from key of F#
-        "A": "C#",  // Key of A uses 251 minor from key of C#
-        "E": "Ab",  // Key of E uses 251 minor from key of Ab
-        "B": "Eb",  // Key of B uses 251 minor from key of Eb
-        "F#": "Bb", // Key of F# uses 251 minor from key of Bb
-        "Db": "F",  // Key of Db uses 251 minor from key of F
-        "Ab": "C",  // Key of Ab uses 251 minor from key of C
-        "Eb": "G",  // Key of Eb uses 251 minor from key of G
-        "Bb": "D",  // Key of Bb uses 251 minor from key of D
-        "F": "A"    // Key of F uses 251 minor from key of A
-    };
+// Generate tritone-sub 25 minor phrase - following the specified structure
+function generateTritoneSub25MinorPhrase(keyName) {
+    console.log('generateTritoneSub25MinorPhrase called with keyName:', keyName);
     
-    const sourceKey = keyToSourceKey[keyName];
-    if (!sourceKey) {
-        throw new Error(`No source key mapping found for short deceptive 25 in key ${keyName}`);
+    // Ensure transposed cells are initialized (same fallback as other functions)
+    if (!window.CELLS_down2 && typeof initializeTransposedCells === 'function') {
+        console.log('CELLS_down2 not available, calling initializeTransposedCells...');
+        initializeTransposedCells();
     }
     
-    // Save current cyclers
-    const originalLeftCycler = leftCycler;
-    const originalRightCycler = rightCycler;
-    const originalResolutionCycler = resolutionCycler;
+    // Check if required cell sets are available
+    if (!window.CELLS_down2) {
+        console.error('CELLS_down2 not available');
+        throw new Error('CELLS_down2 not initialized');
+    }
     
-    // Initialize cyclers for short_25_minor to generate the source phrase
-    initializeCyclers("short_25_minor");
+    const maxAttempts = 100;
+    let attempts = 0;
     
-    // Generate the short 251 minor phrase in the source key
-    const sourceResult = generateShort25MinorPhrase(sourceKey);
+    while (attempts < maxAttempts) {
+        try {
+            // Position 3 (Resolution): Uses MINOR_C_CELLS - the final resolution cell
+            const resolutionCycler = new Cycler(MINOR_C_CELLS);
+            let resolutionCell = resolutionCycler.nextItem();
+            console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
+            
+            let phrase = [...resolutionCell];
+            
+            // Position 2: Uses window.CELLS_down2
+            const firstNoteCurrent = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in CELLS_down2');
+            
+            const compatibleCellsDown2 = window.CELLS_down2.filter(cell => 
+                cell[cell.length - 1].slice(0, -1) === firstNoteCurrent
+            );
+            console.log('Found', compatibleCellsDown2.length, 'compatible cells in CELLS_down2');
+            
+            if (compatibleCellsDown2.length === 0) {
+                console.log('No compatible cells found in CELLS_down2, retrying...');
+                attempts++;
+                continue;
+            }
+            
+            const cellDown2 = new Cycler(compatibleCellsDown2).nextItem();
+            const adjustedCellDown2 = adjustRightCell(cellDown2, phrase);
+            phrase = cellDown2.slice(0, -1).concat(adjustedCellDown2);
+            
+            // Position 1: Uses CELLSM5
+            const firstNoteCurrent2 = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent2, 'in CELLSM5');
+            
+            const compatibleCellsM5 = window.CELLSM5.filter(cell => 
+                cell[cell.length - 1].slice(0, -1) === firstNoteCurrent2
+            );
+            console.log('Found', compatibleCellsM5.length, 'compatible cells in CELLSM5');
+            
+            if (compatibleCellsM5.length === 0) {
+                console.log('No compatible cells found in CELLSM5, retrying...');
+                attempts++;
+                continue;
+            }
+            
+            const cellM5 = new Cycler(compatibleCellsM5).nextItem();
+            const adjustedCellM5 = adjustRightCell(cellM5, phrase);
+            phrase = cellM5.slice(0, -1).concat(adjustedCellM5);
+            
+            // Position 0 (Leftmost): Uses CELLSM5
+            const firstNoteCurrent3 = phrase[0].slice(0, -1);
+            console.log('Looking for cells ending with pitch class:', firstNoteCurrent3, 'in CELLSM5');
+            
+            const compatibleCellsM5_2 = window.CELLSM5.filter(cell => 
+                cell[cell.length - 1].slice(0, -1) === firstNoteCurrent3
+            );
+            console.log('Found', compatibleCellsM5_2.length, 'compatible cells in CELLSM5');
+            
+            if (compatibleCellsM5_2.length === 0) {
+                console.log('No compatible cells found in CELLSM5, retrying...');
+                attempts++;
+                continue;
+            }
+            
+            const cellM5_2 = new Cycler(compatibleCellsM5_2).nextItem();
+            const adjustedCellM5_2 = adjustRightCell(cellM5_2, phrase);
+            phrase = cellM5_2.slice(0, -1).concat(adjustedCellM5_2);
+            
+            // Validate the final phrase
+            if (phrase.length === 17) {
+                console.log('Generated tritone-sub 25 minor phrase:', phrase);
+                return { phrase: phrase, length: phrase.length };
+            }
+            
+            attempts++;
+            
+        } catch (error) {
+            console.error('Error in attempt', attempts + 1, ':', error);
+            attempts++;
+        }
+    }
     
-    // Restore original cyclers
-    leftCycler = originalLeftCycler;
-    rightCycler = originalRightCycler;
-    resolutionCycler = originalResolutionCycler;
-    
-    // Transpose the phrase to the target key
-    const targetSemitones = KEYS[keyName];
-    const sourceSemitones = KEYS[sourceKey];
-    const transposition = (targetSemitones - sourceSemitones + 12) % 12;
-    
-    const transposedPhrase = sourceResult.phrase.map(note => transposeNote(note, transposition, "C"));
-    
-    // Apply final modulation: one semitone down to fix the key issue
-    const finalPhrase = transposedPhrase.map(note => transposeNote(note, -1, "C"));
-    
-    return { phrase: finalPhrase, length: finalPhrase.length };
+    throw new Error("Failed to generate a valid tritone-sub 25 minor phrase after maximum attempts");
 }
 
 // Generate short IV – iv – phrase (2 cells)
@@ -2219,6 +2367,7 @@ function testLongCells() {
 // Make test function available globally
 if (typeof window !== 'undefined') {
     window.testLongCells = testLongCells;
+    window.generatePhrase = generatePhrase;
 }
 
 // Export the generatePhrase function

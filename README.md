@@ -81,7 +81,7 @@ Available in both Short (9 notes) and Long (17 notes) versions.
 - Short version: 9 notes
 - Long version: 17 notes
 
-**Deceptive 25**: V7-vi progressions
+**Tritone-sub 25**: Major and Minor options (implementation pending)
 - Short version: 9 notes
 - Long version: 17 notes
 

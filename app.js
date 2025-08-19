@@ -196,9 +196,19 @@ function setupEventListeners() {
         showScreen('length');
     });
 
-    document.getElementById('deceptive-25-btn').addEventListener('click', () => {
-        appState.phraseType = 'deceptive_25';
-        showScreen('length');
+    document.getElementById('tritone-sub-25-btn').addEventListener('click', () => {
+        showScreen('tritone-sub-25-type');
+    });
+
+    // Tritone-sub 25 sub-type selection
+    document.getElementById('tritone-sub-25-major-btn').addEventListener('click', () => {
+        appState.phraseType = 'tritone_sub_25_major';
+        navigateToGenerator();
+    });
+
+    document.getElementById('tritone-sub-25-minor-btn').addEventListener('click', () => {
+        appState.phraseType = 'tritone_sub_25_minor';
+        navigateToGenerator();
     });
 
     document.getElementById('iv-iv-btn').addEventListener('click', () => {
@@ -301,12 +311,13 @@ function setupEventListeners() {
     });
     document.getElementById('chord-type-return').addEventListener('click', () => showScreen('phrase-type'));
     document.getElementById('25-type-return').addEventListener('click', () => showScreen('phrase-type'));
+    document.getElementById('tritone-sub-25-type-return').addEventListener('click', () => showScreen('25-type'));
     document.getElementById('biii-to-ii-type-return').addEventListener('click', () => showScreen('phrase-type'));
     document.getElementById('i-dim-to-i-type-return').addEventListener('click', () => showScreen('phrase-type'));
             document.getElementById('length-return').addEventListener('click', () => {
             if (appState.phraseType === '7sus4') {
                 showScreen('chord-type');
-            } else if (appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' || appState.phraseType === 'backdoor_25' || appState.phraseType === 'deceptive_25') {
+            } else if (appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' || appState.phraseType === 'backdoor_25' || appState.phraseType === 'tritone_sub_25_major' || appState.phraseType === 'tritone_sub_25_minor') {
                 showScreen('25-type');
             } else if (appState.phraseType === 'iii_to_biii' || appState.phraseType === 'biii_to_ii_old') {
                 showScreen('biii-to-ii-type');
@@ -320,7 +331,7 @@ function setupEventListeners() {
                     if (appState.phraseType === '7sus4' || appState.phraseType === 'major' || 
             appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
             appState.phraseType === 'iii_to_biii' || appState.phraseType === 'biii_to_ii_old' || appState.phraseType === 'backdoor_25' ||
-            appState.phraseType === 'deceptive_25' || appState.phraseType === 'iv_iv' ||
+            appState.phraseType === 'iv_iv' ||
             appState.phraseType === 'iv7_to_iv_sharp_dim' || appState.phraseType === 'iv_sharp_half_dim_to_vii7' ||
             appState.phraseType === 'long_iv_sharp_half_dim_to_vii7') {
                 showScreen('length');
@@ -379,6 +390,8 @@ function handleBackNavigation() {
                 appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
                 appState.phraseType === 'iv_iv') {
                 showScreen('length');
+            } else if (appState.phraseType === 'tritone_sub_25_major' || appState.phraseType === 'tritone_sub_25_minor') {
+                showScreen('25-type');
             } else {
                 showScreen('phrase-type');
             }
@@ -451,7 +464,8 @@ function getPhraseTypeDisplay(phraseType) {
         case 'major_25': return 'Major 25';
         case 'minor_25': return 'Minor 25';
         case 'backdoor_25': return 'Backdoor 25';
-        case 'deceptive_25': return 'Deceptive 25';
+        case 'tritone_sub_25_major': return 'Tritone-sub 25 Major';
+        case 'tritone_sub_25_minor': return 'Tritone-sub 25 Minor';
         case 'iv_iv': return 'IV to iv';
         case 'short_iv_iv': return 'IV to iv';
         case 'ii7_to_v7': return 'II7 to ii';
@@ -873,8 +887,10 @@ function getFinalPhraseType(useRandomCycling = false) {
             return appState.length === 'short' ? 'biii_to_ii_old' : 'long_biii_to_ii_old';
     } else if (appState.phraseType === 'backdoor_25') {
         return appState.length === 'short' ? 'short_backdoor_25' : 'backdoor_25';
-    } else if (appState.phraseType === 'deceptive_25') {
-        return appState.length === 'short' ? 'short_deceptive_25' : 'deceptive_25';
+    } else if (appState.phraseType === 'tritone_sub_25_major') {
+        return 'tritone_sub_25_major';
+    } else if (appState.phraseType === 'tritone_sub_25_minor') {
+        return 'tritone_sub_25_minor';
     } else if (appState.phraseType === 'iv_iv') {
         return appState.length === 'short' ? 'short_iv_iv' : 'iv_iv';
             } else if (appState.phraseType === 'iv7_to_iv_sharp_dim') {
@@ -971,8 +987,10 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getBiiiToIiOldChordProgression(selectedKey);
         } else if (phraseType === "backdoor_25" || phraseType === "short_backdoor_25") {
             return window.KEY_CHORD_MAP["backdoor_25"][selectedKey];
-        } else if (phraseType === "deceptive_25" || phraseType === "short_deceptive_25") {
-            return getDeceptive25ChordProgression(selectedKey);
+        } else if (phraseType === "tritone_sub_25_major") {
+            return `Tritone-sub 25 Major in the key of ${selectedKey}`;
+        } else if (phraseType === "tritone_sub_25_minor") {
+            return `Tritone-sub 25 Minor in the key of ${selectedKey}`;
         } else if (phraseType === "iv_iv" || phraseType === "short_iv_iv") {
             return window.KEY_CHORD_MAP["iv_iv"][selectedKey];
         } else if (phraseType.includes("major")) {
@@ -1031,8 +1049,10 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return getBiiiToIiOldChordProgression(generatedKey);
         } else if (phraseType === "backdoor_25" || phraseType === "short_backdoor_25") {
             return window.KEY_CHORD_MAP["backdoor_25"][generatedKey];
-        } else if (phraseType === "deceptive_25" || phraseType === "short_deceptive_25") {
-            return getDeceptive25ChordProgression(generatedKey);
+        } else if (phraseType === "tritone_sub_25_major") {
+            return `Tritone-sub 25 Major in the key of ${generatedKey}`;
+        } else if (phraseType === "tritone_sub_25_minor") {
+            return `Tritone-sub 25 Minor in the key of ${generatedKey}`;
         } else if (phraseType === "iv_iv" || phraseType === "short_iv_iv") {
             return window.KEY_CHORD_MAP["iv_iv"][generatedKey];
         } else {
@@ -1339,54 +1359,6 @@ function getBiiiToIiOldChordProgression(key) {
     if (viKey && iiKey && ivsKey && viiKey) {
         return `${viKey}m to ${iiKey}7b9 / ${ivsKey}ø7 to ${viiKey}7b9 (to ${iiKey}m)`;
     }
-    return `in the key of ${key}`;
-}
-
-function getDeceptive25ChordProgression(key) {
-    // Deceptive 25: same as 251 minor but in a different key
-    // Key of C: same as 251 minor in key of E (F#ø7 B7 C)
-    // Key of Eb: same as 251 minor in key of G (Aø7 D7 Eb)
-    
-    // Map the target key to the source key for 251 minor
-    const keyToSourceKey = {
-        "C": "E",   // Key of C uses 251 minor from key of E
-        "G": "B",   // Key of G uses 251 minor from key of B
-        "D": "F#",  // Key of D uses 251 minor from key of F#
-        "A": "C#",  // Key of A uses 251 minor from key of C#
-        "E": "Ab",  // Key of E uses 251 minor from key of Ab
-        "B": "Eb",  // Key of B uses 251 minor from key of Eb
-        "F#": "Bb", // Key of F# uses 251 minor from key of Bb
-        "Db": "F",  // Key of Db uses 251 minor from key of F
-        "Ab": "C",  // Key of Ab uses 251 minor from key of C
-        "Eb": "G",  // Key of Eb uses 251 minor from key of G
-        "Bb": "D",  // Key of Bb uses 251 minor from key of D
-        "F": "A"    // Key of F uses 251 minor from key of A
-    };
-    
-    const sourceKey = keyToSourceKey[key];
-    if (!sourceKey) {
-        return `in the key of ${key}`;
-    }
-    
-    // Calculate the chord progression: iiø7 V7 I for the SOURCE key (not target key)
-    // The first two chords come from the source key, the last chord is the target key
-    const sourceSemitones = KEYS[sourceKey];
-    const iiSemitones = (sourceSemitones + 2) % 12;  // 2 semitones up from source tonic
-    const vSemitones = (sourceSemitones + 7) % 12;   // 7 semitones up from source tonic
-    
-    let iiKey = null;
-    let vKey = null;
-    
-    for (const [k, semitones] of Object.entries(KEYS)) {
-        if (semitones === iiSemitones) iiKey = k;
-        if (semitones === vSemitones) vKey = k;
-    }
-
-
-    if (iiKey && vKey) {
-        return `${iiKey}ø7 ${vKey}7 ${key}`;
-    }
-    
     return `in the key of ${key}`;
 }
 

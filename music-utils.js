@@ -365,4 +365,14 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 } 
 
+// Make functions available globally for browser environment
+if (typeof window !== 'undefined') {
+    window.transposeNote = transposeNote;
+    window.transposeNoteDownOneOctave = transposeNoteDownOneOctave;
+    window.adjustRightCell = adjustRightCell;
+    window.Cycler = Cycler;
+    window.noteToPitch = noteToPitch;
+    console.log('music-utils.js: Functions made available globally');
+}
+
 // Functions for 7sus4 chord display and key mapping are now in data.js

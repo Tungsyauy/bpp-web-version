@@ -104,11 +104,7 @@ body {
     text-align: center;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     letter-spacing: 1px;
-    /* Glassmorphism text effect */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-family: inherit;
 }
 
 .screen-title {
@@ -119,11 +115,7 @@ body {
     text-align: center;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     letter-spacing: 0.5px;
-    /* Glassmorphism text effect */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-family: inherit;
 }
 
 /* Specific spacing for mode selection */
@@ -427,6 +419,18 @@ body {
     align-items: center;
 }
 
+.tritone-sub-25-type-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 2.5vw, 20px);
+    max-width: min(90%, 480px);
+    width: min(90%, 480px);
+    margin: 0 auto clamp(20px, 3vh, 25px) auto;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+}
+
 .biii-type-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -565,7 +569,7 @@ body {
     -webkit-user-zoom: fixed;
     -moz-user-zoom: fixed;
     user-zoom: fixed;
-    overflow: hidden;
+    overflow: visible;
     /* Additional iPhone specific fixes */
     -webkit-text-size-adjust: none;
     -ms-text-size-adjust: none;
@@ -731,7 +735,8 @@ body {
 }
 
 .notation-container svg {
-    max-width: 100%;
+    max-width: none;
+    width: auto;
     height: auto;
     margin: 0 auto;
     /* Prevent scaling on touch/click */
@@ -896,7 +901,8 @@ body {
 }
 
 .notation-container .abcjs-container svg {
-    max-width: 100%;
+    max-width: none;
+    width: auto;
     height: auto;
     display: block;
     margin: 0 auto;
@@ -1108,7 +1114,8 @@ body {
     }
     
     .notation-container .abcjs-container svg {
-        max-width: 100%;
+        max-width: none;
+        width: auto;
         height: auto;
         transform: none;
         transition: none;
@@ -1139,7 +1146,8 @@ body {
     }
     
     .notation-container .abcjs-container svg {
-        max-width: 100%;
+        max-width: none;
+        width: auto;
         height: auto;
         transform: none;
         transition: none;
@@ -1194,6 +1202,19 @@ body {
         align-items: center !important;
     }
     
+    /* Portrait mode 25 type grid - vertical layout */
+    .twentyfive-type-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: clamp(16px, 2.5vw, 20px) !important;
+        max-width: min(90%, 480px) !important;
+        width: min(90%, 480px) !important;
+        margin: 0 auto clamp(20px, 3vh, 25px) auto !important;
+        justify-content: center !important;
+        justify-items: center !important;
+        align-items: center !important;
+    }
+    
     /* Move all page grids upward in landscape mode (except phrase generator) */
     @media screen and (orientation: landscape) and (max-width: 768px) {
         .welcome-grid,
@@ -1232,6 +1253,16 @@ body {
     }
 }
 
+/* Landscape mode override for 25 type grid - 2x2 layout */
+@media screen and (orientation: landscape) and (max-width: 768px) {
+    .twentyfive-type-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: clamp(12px, 2vw, 16px) !important;
+        max-width: min(90%, 520px) !important;
+        width: min(90%, 520px) !important;
+    }
+}
+
 /* PC/Desktop specific notation container adjustments */
 @media screen and (min-width: 769px) {
     .notation-container {
@@ -1257,7 +1288,7 @@ body {
 .notation-container .abcjs-container svg {
     width: auto !important;
     height: auto !important;
-    max-width: 100% !important;
+    max-width: none !important;
     max-height: none !important;
     transform: none !important;
     transition: none !important;

@@ -286,6 +286,8 @@ window.CELLS2_ADDITIONAL = [...BASE_CELLS2_ADDITIONAL];
 window.MAJOR_CELLS = [...BASE_MAJOR_CELLS];
 window.MAJOR_RESOLUTION_CELLS = [...BASE_MAJOR_RESOLUTION_CELLS];
 
+
+
 // Filtered versions for long 251 major phrases
 // Position 0 (leftmost, last in time): uses CELLS, exclude cells starting with E
 window.CELLS_FILTERED_NO_E = BASE_CELLS.filter(cell => 
@@ -437,6 +439,12 @@ function initializeTransposedCells() {
     console.log('Generating CELLS_up2...');
     window.CELLS_up2 = filterCellsStartingWith(transposeCells(BASE_CELLS, 2, "C"), "F");
     console.log('CELLS_up2 generated:', window.CELLS_up2.length, 'cells');
+    
+    console.log('Generating CELLS_up6...');
+    window.CELLS_up6 = transposeCells(BASE_CELLS, 6, "C");
+    console.log('CELLS_up6 generated:', window.CELLS_up6.length, 'cells');
+    console.log('CELLS_up6 sample:', window.CELLS_up6[0]);
+    console.log('CELLS_up6 is now available globally:', window.CELLS_up6 ? 'YES' : 'NO');
     
     console.log('Generating CELLS_down5...');
     window.CELLS_down5 = filterCellsStartingWith(transposeCells(BASE_CELLS, -5, "C"), "F");
@@ -674,6 +682,34 @@ window.KEY_CHORD_MAP = {
         "Bb": "Ebm Ab7 Bb",
         "F": "Bbm Eb7 F"
     },
+    "tritone_sub_25_major": {
+        "C": "in the key of C",
+        "G": "in the key of G",
+        "D": "in the key of D",
+        "A": "in the key of A",
+        "E": "in the key of E",
+        "B": "in the key of B",
+        "F#": "in the key of F#",
+        "Db": "in the key of Db",
+        "Ab": "in the key of Ab",
+        "Eb": "in the key of Eb",
+        "Bb": "in the key of Bb",
+        "F": "in the key of F"
+    },
+    "tritone_sub_25_minor": {
+        "C": "in the key of Am",
+        "G": "in the key of Em",
+        "D": "in the key of Bm",
+        "A": "in the key of F#m",
+        "E": "in the key of C#m",
+        "B": "in the key of Abm",
+        "F#": "in the key of Ebm",
+        "Db": "in the key of Bbm",
+        "Ab": "in the key of Fm",
+        "Eb": "in the key of Cm",
+        "Bb": "in the key of Gm",
+        "F": "in the key of Dm"
+    },
     "iv_iv": {
         "C": "F – Fm –",
         "G": "C – Cm –",
@@ -888,21 +924,31 @@ window.KEYS = KEYS;
 
 // Initialize transposed cells when the page loads
 if (typeof window !== 'undefined') {
+    // Function to attempt initialization with retry logic
+    function attemptInitialization() {
+        console.log('Attempting initialization...');
+        console.log('window.transposeNote type:', typeof window.transposeNote);
+        console.log('window.transposeNote available:', window.transposeNote ? 'YES' : 'NO');
+        
+        if (typeof window.transposeNote === 'function') {
+            console.log('transposeNote function available, initializing transposed cells...');
+            initializeTransposedCells();
+            console.log('Transposed cells initialized on page load');
+        } else {
+            console.log('transposeNote function not available yet, retrying in 200ms...');
+            setTimeout(attemptInitialization, 200);
+        }
+    }
+    
     // Wait for DOM to be ready and all scripts to be loaded
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
-            // Small delay to ensure music-utils.js is fully loaded
-            setTimeout(() => {
-                initializeTransposedCells();
-                console.log('Transposed cells initialized on page load');
-            }, 100);
+            // Start attempting initialization
+            attemptInitialization();
         });
     } else {
-        // DOM is already loaded, but wait a bit for other scripts
-        setTimeout(() => {
-            initializeTransposedCells();
-            console.log('Transposed cells initialized on page load');
-        }, 100);
+        // DOM is already loaded, start attempting initialization
+        attemptInitialization();
     }
 }
 
