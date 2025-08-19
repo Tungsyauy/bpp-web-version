@@ -556,15 +556,21 @@ function generateShort25MajorPhrase(keyName) {
     return { phrase: phrase, length: phrase.length };
 }
 
-// Generate long 25 major phrase - EXACT MATCH TO PYTHON
+// Generate long 25 major phrase - MODIFIED to use filtered cells for positions 0 and 1
 function generateLong25MajorPhrase(keyName) {
-    let resolutionCell = resolutionCycler.nextItem();  // This comes from MAJOR_RESOLUTION_CELLS
+    let resolutionCell = resolutionCycler.nextItem();  // Position 3 (rightmost, first in time)
     let phrase = resolutionCell;
-    const cellSets = [window.CELLS2, CELLS, CELLS];
+    console.log('Long 251 major - Position 3 (resolution):', resolutionCell, 'starts with:', resolutionCell[0]);
+    // Position order: [position 2, position 1, position 0] - added right to left
+    // Position 2: uses CELLS2 (no F), Position 1: uses CELLS (no filtering), Position 0: uses CELLS (no E)
+    const cellSets = [window.CELLS2_FILTERED_NO_F, window.CELLS, window.CELLS_FILTERED_NO_E];
+    const positionNames = ['Position 2', 'Position 1', 'Position 0'];
     let usedCells = new Set(); // Track used cells to avoid duplicates
     usedCells.add(resolutionCell.join(' ')); // Add the resolution cell
     
-    for (const cellSet of cellSets) {
+    for (let i = 0; i < cellSets.length; i++) {
+        const cellSet = cellSets[i];
+        const positionName = ['Position 2', 'Position 1', 'Position 0'][i];
         const firstNoteCurrent = phrase[0].slice(0, -1);
         const dominantCompatibleCells = cellSet.filter(cell => cell[cell.length - 1].slice(0, -1) === firstNoteCurrent);
         
@@ -577,6 +583,7 @@ function generateLong25MajorPhrase(keyName) {
             }
             
             const leftCell = new Cycler(unusedCompatibleCells).nextItem();
+            console.log(`Long 251 major - ${positionName}:`, leftCell, 'starts with:', leftCell[0]);
             usedCells.add(leftCell.join(' ')); // Mark this cell as used
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);

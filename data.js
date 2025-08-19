@@ -285,6 +285,20 @@ window.CELLS2 = [...BASE_CELLS, ...BASE_CELLS2_ADDITIONAL];
 window.CELLS2_ADDITIONAL = [...BASE_CELLS2_ADDITIONAL];
 window.MAJOR_CELLS = [...BASE_MAJOR_CELLS];
 window.MAJOR_RESOLUTION_CELLS = [...BASE_MAJOR_RESOLUTION_CELLS];
+
+// Filtered versions for long 251 major phrases
+// Position 0 (leftmost, last in time): uses CELLS, exclude cells starting with E
+window.CELLS_FILTERED_NO_E = BASE_CELLS.filter(cell => 
+    !cell[0].startsWith('E')
+);
+console.log(`CELLS filtered for position 0 from ${BASE_CELLS.length} to ${window.CELLS_FILTERED_NO_E.length} cells (excluded E starts)`);
+
+// Position 2 (third from left): uses CELLS2, exclude cells starting with F (but keep F#)  
+window.CELLS2_FILTERED_NO_F = [...BASE_CELLS, ...BASE_CELLS2_ADDITIONAL].filter(cell => 
+    !cell[0].startsWith('F4') && !cell[0].startsWith('F5') && !cell[0].startsWith('F3')
+);
+console.log(`CELLS2 filtered for position 2 from ${window.CELLS2.length} to ${window.CELLS2_FILTERED_NO_F.length} cells (excluded F starts)`);
+
 // MINOR_B_CELLS will be updated in initializeTransposedCells() to include transposed BASE_CELLS
 window.MINOR_B_CELLS = [...BASE_MINOR_B_CELLS_ORIGINAL];
 window.MINOR_C_CELLS = [...BASE_MINOR_C_CELLS];
