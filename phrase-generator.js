@@ -1062,11 +1062,7 @@ function generateBiiiToIiOldPhrase(keyName) { // Now generates vi to II7b9 phras
     
     // Short version: 1 cell from CELLS_up2 (left, excludes cells starting with "G") + 1 cell from BASE_BIIICELLS or BASE_LONG_BIIICELLS (right)
     
-    // Check if CELLS_up5 is available (required for down4 mode)
-    if (!window.CELLS_up5) {
-        console.error('CELLS_up5 not available');
-        throw new Error('CELLS_up5 not initialized');
-    }
+
     
     const maxAttempts = 50; // Limit attempts to avoid infinite loops
     
@@ -1114,10 +1110,21 @@ function generateBiiiToIiOldPhrase(keyName) { // Now generates vi to II7b9 phras
             continue; // Try again with a new right cell
         }
         
-        // Find compatible left cells from CELLS_up2 (cells that end with the same pitch class as right cell starts)
+        // Extra cells for the left cell
+        const extraCells = [
+            ["A3", "G3", "F#3", "E3", "D#3"],
+            ["F#3", "A3", "C4", "E4", "D#4"],
+            ["F#4", "A3", "C4", "E4", "D#4"],
+            ["E4", "G4", "F#4", "E4", "D#4"],
+            ["C4", "A3", "F#3", "E3", "D#3"],
+            ["F#4", "C4", "E4", "D4", "D#4"]
+        ];
+        
+        // Find compatible left cells from CELLS_up2 + extra cells (cells that end with the same pitch class as right cell starts)
         // Filter out cells starting with "G" for the leftmost cell
         // Note: The right cell (position 3) can use either the original cells or the new long cells
-        const compatibleLeft = window.CELLS_up2.filter(cell => {
+        const allLeftCells = [...window.CELLS_up2, ...extraCells];
+        const compatibleLeft = allLeftCells.filter(cell => {
             const cellEndsWith = cell[cell.length - 1].slice(0, -1);
             const cellStartsWith = cell[0].slice(0, -1);
             return cellEndsWith === firstNoteRight && cellStartsWith !== 'G';
@@ -1128,8 +1135,29 @@ function generateBiiiToIiOldPhrase(keyName) { // Now generates vi to II7b9 phras
             continue; // Try again with a new right cell
         }
         
-        // Found compatible cells, select one from the compatible cells
-        const leftCell = compatibleLeft[Math.floor(Math.random() * compatibleLeft.length)];
+        // Filter out forbidden patterns from the left cell
+        const forbiddenPatterns = [
+            ["A5", "G5", "F#5", "G5", "D#5"],
+            ["C5", "E4", "Eb4", "E4", "B4"]
+        ];
+        
+        const compatibleLeftFiltered = compatibleLeft.filter(cell => {
+            const cellPitchClasses = cell.map(note => noteToPitch(note)[0]);
+            const matchesForbiddenPattern = forbiddenPatterns.some(forbiddenPattern => {
+                const forbiddenPitchClasses = forbiddenPattern.map(note => noteToPitch(note)[0]);
+                return cellPitchClasses.every((pitchClass, index) => 
+                    pitchClass === forbiddenPitchClasses[index]
+                );
+            });
+            return !matchesForbiddenPattern;
+        });
+        
+        if (compatibleLeftFiltered.length === 0) {
+            continue; // Try again with a new right cell
+        }
+        
+        // Found compatible cells, select one from the filtered compatible cells
+        const leftCell = compatibleLeftFiltered[Math.floor(Math.random() * compatibleLeftFiltered.length)];
         
         // Log when long cells are used
         if (leftCell.length === 9) {
@@ -1154,7 +1182,7 @@ function generateBiiiToIiOldPhrase(keyName) { // Now generates vi to II7b9 phras
 // Generate long vi to II7b9 phrase - similar to long 25 minor approach
 function generateLongBiiiToIiOldPhrase(keyName) {
     // Long version: 2 cells from CELLS_up2 (cells 0,1, where cell 0 excludes cells starting with "G") + 1 long cell from BASE_LONG_BIIICELLS (fills positions 2+3)
-    // Modes: long (17 notes), short (20 notes), down4 (20 notes using CELLS_up5 for positions 2+3)
+    // Modes: long (17 notes), short (20 notes)
     const maxAttempts = 50;
     let attempts = 0;
     
@@ -1194,19 +1222,18 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 return cell; // fallback
             };
 
-            // Decide mode per 12-cycle: 6 long phrases, 3 short (original), 3 down4 (new)
+            // Decide mode per 9-cycle: 6 long phrases, 3 short (original)
             if (!window.biiiModeQueue || window.biiiModeQueue.length === 0) {
                 window.biiiModeQueue = [
                     'long','long','long','long','long','long',
-                    'short','short','short',
-                    'down4','down4','down4'
+                    'short','short','short'
                 ];
                 // Shuffle
                 for (let i = window.biiiModeQueue.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [window.biiiModeQueue[i], window.biiiModeQueue[j]] = [window.biiiModeQueue[j], window.biiiModeQueue[i]];
                 }
-                console.log('Shuffled 12-cycle (6 long, 3 short, 3 down4)');
+                console.log('Shuffled 9-cycle (6 long, 3 short)');
             }
             const mode = window.biiiModeQueue[0]; // peek; advance only on success
 
@@ -1232,24 +1259,17 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 }
             }
             if (!useLong) {
-                if (mode === 'down4') {
-                    // Down4 mode: positions 3 and 2 from CELLS_up5
-                    const down4Cycler = new Cycler(window.CELLS_up5);
-                    rightCell = down4Cycler.nextItem();
-                    console.log('Mode=down4. Selected pos3 from CELLS_up5:', rightCell);
-                } else {
-                    // Original short: positions 3 and 2 from BASE_BIIICELLS
-                    const bannedPos3 = [
-                        ["D4","B3","C4","D4","D#4"],
-                        ["B4","A4","F#4","G4","G#4"]
-                    ];
-                    const bannedSet = new Set(bannedPos3.map(c=>c.join(' ')));
-                    const base = window.BASE_BIIICELLS || [];
-                    const candidatesPos3 = base.filter(c => !bannedSet.has(c.join(' ')));
-                    if (candidatesPos3.length === 0) throw new Error('No pos3 candidates for short mode');
-                    rightCell = new Cycler(candidatesPos3).nextItem();
-                    console.log('Mode=short. Selected pos3:', rightCell);
-                }
+                // Short mode: positions 3 and 2 from BASE_BIIICELLS
+                const bannedPos3 = [
+                    ["D4","B3","C4","D4","D#4"],
+                    ["B4","A4","F#4","G4","G#4"]
+                ];
+                const bannedSet = new Set(bannedPos3.map(c=>c.join(' ')));
+                const base = window.BASE_BIIICELLS || [];
+                const candidatesPos3 = base.filter(c => !bannedSet.has(c.join(' ')));
+                if (candidatesPos3.length === 0) throw new Error('No pos3 candidates for short mode');
+                rightCell = new Cycler(candidatesPos3).nextItem();
+                console.log('Mode=short. Selected pos3:', rightCell);
             }
             
             // Define the cells to exclude from BASE_BIIICELLS (for cells 2 and 3)
@@ -1265,31 +1285,26 @@ function generateLongBiiiToIiOldPhrase(keyName) {
             ];
             
             // Skip any of the excluded cells (check both 5-note and 9-note versions)
-            // Note: down4 mode uses CELLS_up5 and is not subject to these exclusions
-            if (mode !== 'down4') {
-                const isExcludedCell = excludedCells.some(excludedCell => {
-                    // For 5-note cells, check exact match
-                    if (rightCell.length === 5) {
-                        return rightCell.every((note, index) => note === excludedCell[index]);
-                    }
-                    // Do NOT exclude long (9-note) cells by 5-note patterns
-                    if (rightCell.length === 9) {
-                        return false;
-                    }
-                    return false;
-                });
-                
-                if (isExcludedCell) {
-                    attempts++;
-                    continue; // Try again with a new right cell
+            const isExcludedCell = excludedCells.some(excludedCell => {
+                // For 5-note cells, check exact match
+                if (rightCell.length === 5) {
+                    return rightCell.every((note, index) => note === excludedCell[index]);
                 }
+                // Do NOT exclude long (9-note) cells by 5-note patterns
+                if (rightCell.length === 9) {
+                    return false;
+                }
+                return false;
+            });
+            
+            if (isExcludedCell) {
+                attempts++;
+                continue; // Try again with a new right cell
             }
             
             // Log when long cells are used
             if (rightCell.length === 9) {
                 console.log('🎵 Using LONG cell for positions 2+3:', rightCell.length, 'notes');
-            } else if (mode === 'down4') {
-                console.log('🔽 Using CELLS_up5 cell for positions 2+3:', rightCell.length, 'notes');
             } else {
                 console.log('📝 Using regular cell for positions 2+3:', rightCell.length, 'notes');
             }
@@ -1309,21 +1324,24 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 console.log('Mode=short. Added pos2. Phrase length:', phrase.length);
             }
             
-            // For down4 mode, also pick position 2 from CELLS_up5 to connect to pos3
-            if (mode === 'down4' && rightCell.length === 5) {
-                const down4Base = window.CELLS_up5;
-                const pos2Candidates = down4Base.filter(c => c[c.length-1].slice(0,-1) === rightCell[0].slice(0,-1));
-                if (pos2Candidates.length === 0) throw new Error('No pos2 candidates for down4 mode');
-                const pos2 = new Cycler(pos2Candidates).nextItem();
-                const adjusted = adjustRightCell(pos2, phrase);
-                phrase = pos2.slice(0,-1).concat(adjusted);
-                console.log('Mode=down4. Added pos2 from CELLS_up5. Phrase length:', phrase.length);
-            }
+
             
             // Now add two cells from CELLS2_up2 (position 1) then CELLS_up2 (position 0)
-            const pos0Set = (window.CELLS2_up2 && Array.isArray(window.CELLS2_up2) && window.CELLS2_up2.length) ? window.CELLS2_up2 : window.CELLS_up2; // position 1
+            // Extra cells for position 1
+            const extraCells = [
+                ["A3", "G3", "F#3", "E3", "D#3"],
+                ["F#3", "A3", "C4", "E4", "D#4"],
+                ["F#4", "A3", "C4", "E4", "D#4"],
+                ["E4", "G4", "F#4", "E4", "D#4"],
+                ["C4", "A3", "F#3", "E3", "D#3"],
+                ["F#4", "C4", "E4", "D4", "D#4"]
+            ];
+            
+            const pos0Set = (window.CELLS2_up2 && Array.isArray(window.CELLS2_up2) && window.CELLS2_up2.length) ? 
+                [...window.CELLS2_up2, ...extraCells] : 
+                [...window.CELLS_up2, ...extraCells]; // position 1 (includes extra cells)
             const pos1Set = window.CELLS_up2; // position 0
-            const cellSets = [pos0Set, pos1Set]; // i=0 uses CELLS2_up2 (position 1), i=1 uses CELLS_up2 (position 0)
+            const cellSets = [pos0Set, pos1Set]; // i=0 uses CELLS2_up2 + extra cells (position 1), i=1 uses CELLS_up2 (position 0)
             console.log('Cell sets order for positions 1 then 0:', {pos1: cellSets[0] === window.CELLS2_up2 ? 'CELLS2_up2' : 'CELLS_up2', pos0: cellSets[1] === window.CELLS2_up2 ? 'CELLS2_up2' : 'CELLS_up2'});
             let usedCells = new Set();
             
@@ -1331,7 +1349,7 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 const cellSet = cellSets[i];
                 const firstNoteCurrent = phrase[0].slice(0, -1);  // Get pitch class of first note
                 
-                // Filter cells based on position: cell 0 (leftmost) excludes cells starting with "G"
+                // Filter cells based on position: both positions exclude cells starting with "G"
                 let compatibleCells;
                 if (i === 1) {
                     // For cell 0 (leftmost), filter out cells starting with "G"
@@ -1342,17 +1360,18 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                         return cellEndsPitch === phraseFirstPitch && cellStartsWith !== 'G';
                     });
                 } else {
-                    // For cell 1, no additional filtering (pitch-class match)
+                    // For cell 1 (position 1), also filter out cells starting with "G"
                     compatibleCells = cellSet.filter(cell => {
                         const cellEndsPitch = noteToPitch(cell[cell.length - 1])[0];
                         const phraseFirstPitch = noteToPitch(phrase[0])[0];
-                        return cellEndsPitch === phraseFirstPitch;
+                        const cellStartsWith = cell[0].slice(0, -1);
+                        return cellEndsPitch === phraseFirstPitch && cellStartsWith !== 'G';
                     });
                 }
                 
                 if (compatibleCells.length > 0) {
                     // Filter out cells that have already been used
-                    const unusedCompatibleCells = compatibleCells.filter(cell => {
+                    let unusedCompatibleCells = compatibleCells.filter(cell => {
                         return !usedCells.has(cell.join(' '));
                     });
                     
@@ -1360,59 +1379,35 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                         throw new Error("No unused compatible cells found for long vi to II7b9 phrase");
                     }
                     
-                    const leftCell = new Cycler(unusedCompatibleCells).nextItem();
-                    
-                    // Check if the long cell is one of the problematic ones and if the selected cell matches the forbidden pattern
-                    // This constraint should be applied to the second cell (i === 0) which comes after the long cell
+                    // For position 1 (i === 0), ban specific forbidden patterns
                     if (i === 0) {
-                        console.log('Checking constraint for i === 0 (second cell)');
-                        console.log('Current rightCell (long cell):', rightCell);
-                        console.log('Selected leftCell:', leftCell);
-                        
-                        const problematicLongCells = [
-                            ["D#5","F#4","B4","D#5","C5","Eb4", "Ab4", "C5", "A4"],
-                            ["D#5","B4","F#4","D5","C5", "Ab4", "Eb4", "B4", "A4"],
-                            ["B3","C4","F4","A4","D4","Eb4","Ab4","C5","F4"]
-                        ];
-                        
                         const forbiddenPatterns = [
                             ["A5", "G5", "F#5", "G5", "D#5"],
                             ["C5", "E4", "Eb4", "E4", "B4"]
                         ];
                         
-                        // Check if current long cell is problematic
-                        const isProblematicLongCell = problematicLongCells.some(problematicCell => {
-                            const matches = rightCell.length === 9 && rightCell.every((note, index) => note === problematicCell[index]);
-                            if (matches) {
-                                console.log('Found problematic long cell match:', problematicCell);
-                            }
-                            return matches;
+                        // Filter out cells that match forbidden patterns
+                        unusedCompatibleCells = unusedCompatibleCells.filter(cell => {
+                            const cellPitchClasses = cell.map(note => noteToPitch(note)[0]);
+                            const matchesForbiddenPattern = forbiddenPatterns.some(forbiddenPattern => {
+                                const forbiddenPitchClasses = forbiddenPattern.map(note => noteToPitch(note)[0]);
+                                return cellPitchClasses.every((pitchClass, index) => 
+                                    pitchClass === forbiddenPitchClasses[index]
+                                );
+                            });
+                            return !matchesForbiddenPattern;
                         });
                         
-                        // Check if selected cell matches any forbidden pattern (pitch class only)
-                        const selectedCellPitchClasses = leftCell.map(note => noteToPitch(note)[0]);
-                        const matchesForbiddenPattern = forbiddenPatterns.some(forbiddenPattern => {
-                            const forbiddenPitchClasses = forbiddenPattern.map(note => noteToPitch(note)[0]);
-                            return selectedCellPitchClasses.every((pitchClass, index) => 
-                                pitchClass === forbiddenPitchClasses[index]
-                            );
-                        });
+                        console.log('After filtering forbidden patterns, remaining cells:', unusedCompatibleCells.length);
                         
-                        console.log('Selected cell pitch classes:', selectedCellPitchClasses);
-                        console.log('Forbidden patterns pitch classes:', forbiddenPatterns.map(pattern => pattern.map(note => noteToPitch(note)[0])));
-                        console.log('Is problematic long cell:', isProblematicLongCell);
-                        console.log('Matches forbidden pattern:', matchesForbiddenPattern);
-                        
-                        // If both conditions are true, skip this cell and try another
-                        if (isProblematicLongCell && matchesForbiddenPattern) {
-                            console.log('Skipping forbidden cell combination:', leftCell);
-                            console.log('Problematic long cell detected:', rightCell);
-                            // Remove this cell from used cells and try again
-                            usedCells.delete(leftCell.join(' '));
+                        if (unusedCompatibleCells.length === 0) {
+                            console.log('No compatible cells after filtering forbidden patterns, restarting phrase');
                             attempts++;
-                            continue;
+                            break; // Break out of the inner loop to restart
                         }
                     }
+                    
+                    const leftCell = new Cycler(unusedCompatibleCells).nextItem();
                     
                     usedCells.add(leftCell.join(' ')); // Mark this cell as used
                     
@@ -1431,11 +1426,12 @@ function generateLongBiiiToIiOldPhrase(keyName) {
             console.log('Total phrase length:', phrase.length);
             console.log('Expected length with long cells: 4+4+9 = 17 notes');
             console.log('Expected length with short mode: 4+4+5+5+2 = 20 notes');
-            console.log('Expected length with down4 mode: 4+4+5+5+2 = 20 notes');
             console.log('Final phrase:', phrase);
             console.log('=== End phrase structure ===');
             
-            // Advance 12-mode cycle only on success
+
+            
+            // Advance 9-mode cycle only on success
             if (window.biiiModeQueue && window.biiiModeQueue.length) {
                 window.biiiModeQueue.shift();
             }
@@ -1612,7 +1608,7 @@ function validateResolutionCell(phrase, phraseType) {
 // Generate backdoor 25 phrase - COMPLETE REIMPLEMENTATION
 function generateBackdoor25Phrase(keyName) {
     console.log('generateBackdoor25Phrase called with keyName:', keyName);
-    console.log('MAJOR_RESOLUTION_CELLS_down5 available:', window.MAJOR_RESOLUTION_CELLS_down5 ? window.MAJOR_RESOLUTION_CELLS_down5.length : 'undefined');
+    console.log('BACKDOOR_RESOLUTION available:', window.BACKDOOR_RESOLUTION ? window.BACKDOOR_RESOLUTION.length : 'undefined', 'cells');
     console.log('CELLS2_down2 available:', window.CELLS2_down2 ? window.CELLS2_down2.length : 'undefined');
     console.log('CELLS_down2 available:', window.CELLS_down2 ? window.CELLS_down2.length : 'undefined');
     
@@ -1620,9 +1616,9 @@ function generateBackdoor25Phrase(keyName) {
     let attempts = 0;
     
     while (attempts < maxAttempts) {
-        // Create a cycler for the transposed resolution cells
-        const resolutionCyclerTransposed = new Cycler(window.MAJOR_RESOLUTION_CELLS_down5);
-        let resolutionCell = resolutionCyclerTransposed.nextItem();
+        // Create a cycler for the new BACKDOOR_RESOLUTION cells
+        const resolutionCycler = new Cycler(window.BACKDOOR_RESOLUTION);
+        let resolutionCell = resolutionCycler.nextItem();
         console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
         
         let phrase = resolutionCell;
@@ -1635,7 +1631,7 @@ function generateBackdoor25Phrase(keyName) {
             'CELLS_down2': new Set()
         };
         
-        // Add the resolution cell to the appropriate set (it's from MAJOR_RESOLUTION_CELLS_down5)
+        // Add the resolution cell to the appropriate set (it's from BACKDOOR_RESOLUTION)
         usedCellsPerSet['CELLS_down2'].add(resolutionCell.join(' '));
         
         for (let i = 0; i < cellSets.length; i++) {
@@ -1676,7 +1672,7 @@ function generateBackdoor25Phrase(keyName) {
         }
         
         attempts++;
-        resolutionCyclerTransposed.resetPermutation();
+        resolutionCycler.resetPermutation();
     }
     
     throw new Error("Failed to generate a valid backdoor_25 phrase after maximum attempts");
@@ -1685,16 +1681,17 @@ function generateBackdoor25Phrase(keyName) {
 // Generate short backdoor 25 phrase - like long but with only 1 cell + resolution
 function generateShortBackdoor25Phrase(keyName) {
     console.log('generateShortBackdoor25Phrase called with keyName:', keyName);
-    console.log('MAJOR_RESOLUTION_CELLS_down5 available:', window.MAJOR_RESOLUTION_CELLS_down5 ? window.MAJOR_RESOLUTION_CELLS_down5.length : 'undefined');
+    
+    console.log('BACKDOOR_RESOLUTION available:', window.BACKDOOR_RESOLUTION ? window.BACKDOOR_RESOLUTION.length : 'undefined', 'cells');
     console.log('CELLS2_down2 available:', window.CELLS2_down2 ? window.CELLS2_down2.length : 'undefined');
     
     const maxAttempts = 100;
     let attempts = 0;
     
     while (attempts < maxAttempts) {
-        // Create a cycler for the transposed resolution cells
-        const resolutionCyclerTransposed = new Cycler(window.MAJOR_RESOLUTION_CELLS_down5);
-        let resolutionCell = resolutionCyclerTransposed.nextItem();
+        // Create a cycler for the new BACKDOOR_RESOLUTION cells
+        const resolutionCycler = new Cycler(window.BACKDOOR_RESOLUTION);
+        let resolutionCell = resolutionCycler.nextItem();
         console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
         
         let phrase = resolutionCell;
@@ -1743,7 +1740,7 @@ function generateShortBackdoor25Phrase(keyName) {
         }
         
         attempts++;
-        resolutionCyclerTransposed.resetPermutation();
+        resolutionCycler.resetPermutation();
     }
     
     throw new Error("Failed to generate a valid short_backdoor_25 phrase after maximum attempts");
@@ -2194,8 +2191,29 @@ function generateLongIV7ToIvSharpDimPhrase(keyName) {
             }
             
             // Filter out cells that have already been used within this specific cell set
-            const unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
+            let unusedCompatibleCells = compatibleCells.filter(cell => !usedCellsPerSet[cellSetName].has(cell.join(' ')));
             console.log(`Found ${unusedCompatibleCells.length} unused compatible cells in ${cellSetName}`);
+            
+            // For position 1, filter out forbidden patterns
+            if (position === 1) {
+                const forbiddenPatterns = [
+                    ["A5", "G5", "F#5", "G5", "D#5"],
+                    ["C5", "E4", "Eb4", "E4", "B4"]
+                ];
+                
+                unusedCompatibleCells = unusedCompatibleCells.filter(cell => {
+                    const cellPitchClasses = cell.map(note => noteToPitch(note)[0]);
+                    const matchesForbiddenPattern = forbiddenPatterns.some(forbiddenPattern => {
+                        const forbiddenPitchClasses = forbiddenPattern.map(note => noteToPitch(note)[0]);
+                        return cellPitchClasses.every((pitchClass, index) => 
+                            pitchClass === forbiddenPitchClasses[index]
+                        );
+                    });
+                    return !matchesForbiddenPattern;
+                });
+                
+                console.log(`After filtering forbidden patterns, remaining cells: ${unusedCompatibleCells.length}`);
+            }
             
             if (unusedCompatibleCells.length === 0) {
                 console.log('No unused compatible cells found, breaking');
@@ -2240,11 +2258,22 @@ function generateShortIvSharpHalfDimToVii7Phrase(keyName) {
         
         let phrase = rightCell;
         
-        // Add one cell from CELLS2_up2 (left cell)
-        const firstNoteCurrent = phrase[0].slice(0, -1);
-        console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in CELLS2_up2');
+        // Extra cells for the left cell
+        const extraCells = [
+            ["A3", "G3", "F#3", "E3", "D#3"],
+            ["F#3", "A3", "C4", "E4", "D#4"],
+            ["F#4", "A3", "C4", "E4", "D#4"],
+            ["E4", "G4", "F#4", "E4", "D#4"],
+            ["C4", "A3", "F#3", "E3", "D#3"],
+            ["F#4", "C4", "E4", "D4", "D#4"]
+        ];
         
-        const compatibleCells = window.CELLS2_up2.filter(cell => {
+        // Add one cell from CELLS2_up2 + extra cells (left cell)
+        const firstNoteCurrent = phrase[0].slice(0, -1);
+        const allLeftCells = [...(window.CELLS2_up2 || []), ...extraCells];
+        console.log('Looking for cells ending with pitch class:', firstNoteCurrent, 'in CELLS2_up2 + extra cells');
+        
+        const compatibleCells = allLeftCells.filter(cell => {
             const endNote = cell[cell.length - 1].slice(0, -1);
             const startsWithG = cell[0].slice(0, -1) === 'G';
             
@@ -2259,10 +2288,32 @@ function generateShortIvSharpHalfDimToVii7Phrase(keyName) {
             // Filter out cells that start with G for the leftmost cell
             return endsWithCorrectNote && !startsWithG;
         });
-        console.log('Found', compatibleCells.length, 'compatible cells in CELLS2_up2');
+        console.log('Found', compatibleCells.length, 'compatible cells in CELLS2_up2 + extra cells');
         
         if (compatibleCells.length > 0) {
-            const leftCell = new Cycler(compatibleCells).nextItem();
+            // Filter out forbidden patterns from the left cell
+            const forbiddenPatterns = [
+                ["A5", "G5", "F#5", "G5", "D#5"],
+                ["C5", "E4", "Eb4", "E4", "B4"]
+            ];
+            
+            const compatibleCellsFiltered = compatibleCells.filter(cell => {
+                const cellPitchClasses = cell.map(note => noteToPitch(note)[0]);
+                const matchesForbiddenPattern = forbiddenPatterns.some(forbiddenPattern => {
+                    const forbiddenPitchClasses = forbiddenPattern.map(note => noteToPitch(note)[0]);
+                    return cellPitchClasses.every((pitchClass, index) => 
+                        pitchClass === forbiddenPitchClasses[index]
+                    );
+                });
+                return !matchesForbiddenPattern;
+            });
+            
+            if (compatibleCellsFiltered.length === 0) {
+                attempts++;
+                continue; // Try again with a new right cell
+            }
+            
+            const leftCell = new Cycler(compatibleCellsFiltered).nextItem();
             const adjustedNewCell = adjustRightCell(leftCell, phrase);
             phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
             
@@ -2299,10 +2350,20 @@ function generateLongIvSharpHalfDimToVii7Phrase(keyName) {
         
         let phrase = rightCell;
         
+        // Extra cells for position 1
+        const extraCells = [
+            ["A3", "G3", "F#3", "E3", "D#3"],
+            ["F#3", "A3", "C4", "E4", "D#4"],
+            ["F#4", "A3", "C4", "E4", "D#4"],
+            ["E4", "G4", "F#4", "E4", "D#4"],
+            ["C4", "A3", "F#3", "E3", "D#3"],
+            ["F#4", "C4", "E4", "D4", "D#4"]
+        ];
+        
         // Define cell sets for positions 2, 1, 0 (right to left)
         const cellSets = [
             window.BASE_BIIICELLS,  // Position 2
-            window.CELLS2_up2,      // Position 1  
+            [...(window.CELLS2_up2 || []), ...extraCells],  // Position 1 (includes extra cells)
             window.CELLS_up2        // Position 0 (leftmost)
         ];
         

@@ -970,4 +970,24 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 }
 
+// New BACKDOOR_RESOLUTION cells for short backdoor 25 phrases
+// These replace MAJOR_RESOLUTION_CELLS_down5 for better backdoor-specific resolution patterns
+window.BACKDOOR_RESOLUTION = [
+    ["G4", "F4", "Bb4", "Ab4", "G4"],
+    ["C4", "Ab3", "G3", "F3", "E3"],
+    ["D4", "C4", "Ab3", "F3", "E3"],
+    ["D4", "Eb4", "C4", "Ab3", "G3"],
+    ["F4", "G4", "Ab4", "Bb4", "G4"],
+    ["Ab3", "Bb3", "G3", "F3", "E3"],
+    ["Bb3", "Ab3", "G3", "F3", "E3"],
+    ["Bb3", "Ab3", "Eb3", "F3", "G3"],
+    ["Bb3", "Ab3", "Eb3", "C3", "G3"],
+    //["E4", "D4", "Db4", "D4", "G4"],
+    ["E4", "C4", "Ab3", "E3", "B3"],
+    ["Eb4", "C4", "Bb3", "Ab3", "G3"],
+    ["Ab4", "C4", "Eb4", "E4", "G4"],
+    //["Ab4", "C4", "B3", "C4", "G4"],
+    ["Ab3", "Eb4", "C4", "Ab3", "G3"],
+];
+
 // Functions for 7sus4 chord display and key mapping are now included here - COMPLETE MATCH TO PYTHON
