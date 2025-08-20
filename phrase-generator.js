@@ -1058,8 +1058,16 @@ function generateBiiiToIiOldPhrase(keyName) { // Now generates vi to II7b9 phras
     console.log('=== generateBiiiToIiOldPhrase called ===');
     console.log('window.BASE_LONG_BIIICELLS:', window.BASE_LONG_BIIICELLS);
     console.log('window.BASE_BIIICELLS:', window.BASE_BIIICELLS);
+    console.log('window.CELLS_up5:', window.CELLS_up5);
     
     // Short version: 1 cell from CELLS_up2 (left, excludes cells starting with "G") + 1 cell from BASE_BIIICELLS or BASE_LONG_BIIICELLS (right)
+    
+    // Check if CELLS_up5 is available (required for down4 mode)
+    if (!window.CELLS_up5) {
+        console.error('CELLS_up5 not available');
+        throw new Error('CELLS_up5 not initialized');
+    }
+    
     const maxAttempts = 50; // Limit attempts to avoid infinite loops
     
     // Define the cells to exclude (from data.js lines 235-238 and 251-254)
@@ -1146,6 +1154,7 @@ function generateBiiiToIiOldPhrase(keyName) { // Now generates vi to II7b9 phras
 // Generate long vi to II7b9 phrase - similar to long 25 minor approach
 function generateLongBiiiToIiOldPhrase(keyName) {
     // Long version: 2 cells from CELLS_up2 (cells 0,1, where cell 0 excludes cells starting with "G") + 1 long cell from BASE_LONG_BIIICELLS (fills positions 2+3)
+    // Modes: long (17 notes), short (20 notes), down4 (20 notes using CELLS_up5 for positions 2+3)
     const maxAttempts = 50;
     let attempts = 0;
     
@@ -1185,18 +1194,19 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 return cell; // fallback
             };
 
-            // Decide mode per 9-cycle: 6 long phrases, 3 short (original)
+            // Decide mode per 12-cycle: 6 long phrases, 3 short (original), 3 down4 (new)
             if (!window.biiiModeQueue || window.biiiModeQueue.length === 0) {
                 window.biiiModeQueue = [
                     'long','long','long','long','long','long',
-                    'short','short','short'
+                    'short','short','short',
+                    'down4','down4','down4'
                 ];
                 // Shuffle
                 for (let i = window.biiiModeQueue.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [window.biiiModeQueue[i], window.biiiModeQueue[j]] = [window.biiiModeQueue[j], window.biiiModeQueue[i]];
                 }
-                console.log('Shuffled 9-cycle (6 long, 3 short)');
+                console.log('Shuffled 12-cycle (6 long, 3 short, 3 down4)');
             }
             const mode = window.biiiModeQueue[0]; // peek; advance only on success
 
@@ -1222,17 +1232,24 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 }
             }
             if (!useLong) {
-                // Original short: positions 3 and 2 from BASE_BIIICELLS
-                const bannedPos3 = [
-                    ["D4","B3","C4","D4","D#4"],
-                    ["B4","A4","F#4","G4","G#4"]
-                ];
-                const bannedSet = new Set(bannedPos3.map(c=>c.join(' ')));
-                const base = window.BASE_BIIICELLS || [];
-                const candidatesPos3 = base.filter(c => !bannedSet.has(c.join(' ')));
-                if (candidatesPos3.length === 0) throw new Error('No pos3 candidates for short mode');
-                rightCell = new Cycler(candidatesPos3).nextItem();
-                console.log('Mode=short. Selected pos3:', rightCell);
+                if (mode === 'down4') {
+                    // Down4 mode: positions 3 and 2 from CELLS_up5
+                    const down4Cycler = new Cycler(window.CELLS_up5);
+                    rightCell = down4Cycler.nextItem();
+                    console.log('Mode=down4. Selected pos3 from CELLS_up5:', rightCell);
+                } else {
+                    // Original short: positions 3 and 2 from BASE_BIIICELLS
+                    const bannedPos3 = [
+                        ["D4","B3","C4","D4","D#4"],
+                        ["B4","A4","F#4","G4","G#4"]
+                    ];
+                    const bannedSet = new Set(bannedPos3.map(c=>c.join(' ')));
+                    const base = window.BASE_BIIICELLS || [];
+                    const candidatesPos3 = base.filter(c => !bannedSet.has(c.join(' ')));
+                    if (candidatesPos3.length === 0) throw new Error('No pos3 candidates for short mode');
+                    rightCell = new Cycler(candidatesPos3).nextItem();
+                    console.log('Mode=short. Selected pos3:', rightCell);
+                }
             }
             
             // Define the cells to exclude from BASE_BIIICELLS (for cells 2 and 3)
@@ -1247,27 +1264,32 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 ["C4","F4","Ab4","Eb4","F#4"]
             ];
             
-            // Skip any of the four excluded cells (check both 5-note and 9-note versions)
-            const isExcludedCell = excludedCells.some(excludedCell => {
-                // For 5-note cells, check exact match
-                if (rightCell.length === 5) {
-                    return rightCell.every((note, index) => note === excludedCell[index]);
-                }
-                // Do NOT exclude long (9-note) cells by 5-note patterns
-                if (rightCell.length === 9) {
+            // Skip any of the excluded cells (check both 5-note and 9-note versions)
+            // Note: down4 mode uses CELLS_up5 and is not subject to these exclusions
+            if (mode !== 'down4') {
+                const isExcludedCell = excludedCells.some(excludedCell => {
+                    // For 5-note cells, check exact match
+                    if (rightCell.length === 5) {
+                        return rightCell.every((note, index) => note === excludedCell[index]);
+                    }
+                    // Do NOT exclude long (9-note) cells by 5-note patterns
+                    if (rightCell.length === 9) {
+                        return false;
+                    }
                     return false;
+                });
+                
+                if (isExcludedCell) {
+                    attempts++;
+                    continue; // Try again with a new right cell
                 }
-                return false;
-            });
-            
-            if (isExcludedCell) {
-                attempts++;
-                continue; // Try again with a new right cell
             }
             
             // Log when long cells are used
             if (rightCell.length === 9) {
                 console.log('🎵 Using LONG cell for positions 2+3:', rightCell.length, 'notes');
+            } else if (mode === 'down4') {
+                console.log('🔽 Using CELLS_up5 cell for positions 2+3:', rightCell.length, 'notes');
             } else {
                 console.log('📝 Using regular cell for positions 2+3:', rightCell.length, 'notes');
             }
@@ -1285,6 +1307,17 @@ function generateLongBiiiToIiOldPhrase(keyName) {
                 const adjusted = adjustRightCell(pos2, phrase);
                 phrase = pos2.slice(0,-1).concat(adjusted);
                 console.log('Mode=short. Added pos2. Phrase length:', phrase.length);
+            }
+            
+            // For down4 mode, also pick position 2 from CELLS_up5 to connect to pos3
+            if (mode === 'down4' && rightCell.length === 5) {
+                const down4Base = window.CELLS_up5;
+                const pos2Candidates = down4Base.filter(c => c[c.length-1].slice(0,-1) === rightCell[0].slice(0,-1));
+                if (pos2Candidates.length === 0) throw new Error('No pos2 candidates for down4 mode');
+                const pos2 = new Cycler(pos2Candidates).nextItem();
+                const adjusted = adjustRightCell(pos2, phrase);
+                phrase = pos2.slice(0,-1).concat(adjusted);
+                console.log('Mode=down4. Added pos2 from CELLS_up5. Phrase length:', phrase.length);
             }
             
             // Now add two cells from CELLS2_up2 (position 1) then CELLS_up2 (position 0)
@@ -1397,11 +1430,12 @@ function generateLongBiiiToIiOldPhrase(keyName) {
             console.log('=== Final phrase structure ===');
             console.log('Total phrase length:', phrase.length);
             console.log('Expected length with long cells: 4+4+9 = 17 notes');
-            console.log('Expected length with regular cells: 4+4+5+5+2 = 20 notes');
+            console.log('Expected length with short mode: 4+4+5+5+2 = 20 notes');
+            console.log('Expected length with down4 mode: 4+4+5+5+2 = 20 notes');
             console.log('Final phrase:', phrase);
             console.log('=== End phrase structure ===');
             
-            // Advance 9-mode cycle only on success
+            // Advance 12-mode cycle only on success
             if (window.biiiModeQueue && window.biiiModeQueue.length) {
                 window.biiiModeQueue.shift();
             }
@@ -1832,6 +1866,8 @@ function generateTritoneSub25MinorPhrase(keyName) {
         console.error('CELLS_down2 not available');
         throw new Error('CELLS_down2 not initialized');
     }
+    
+
     
     const maxAttempts = 100;
     let attempts = 0;

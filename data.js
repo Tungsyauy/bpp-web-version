@@ -36,7 +36,7 @@ const BASE_CELLS = [
     // Note: Commented out cell ["F4", "D4", "Bb3", "G3", "E4"] was already removed
     ["F4", "D4", "C4", "Bb3", "A3"],
     ["Bb3", "C4", "D4", "F4", "F#4"],
-    ["Bb4", "A4", "G4", "F4", "F#4"],
+    //["Bb4", "A4", "G4", "F4", "F#4"],
     ["F#4", "A4", "G4", "F4", "E4"],
     ["F#4", "A4", "G4", "E4", "C4"],
     ["A4", "Bb4", "D5", "F5", "F#5"],
@@ -428,6 +428,10 @@ function initializeTransposedCells() {
     window.CELLS_down2 = transposeCells(BASE_CELLS, -2, "C");
     console.log('CELLS_down2 generated:', window.CELLS_down2.length, 'cells');
     
+    console.log('Generating CELLS_down4...');
+    window.CELLS_down4 = transposeCells(BASE_CELLS, -4, "C");
+    console.log('CELLS_down4 generated:', window.CELLS_down4.length, 'cells');
+    
     console.log('Generating MINOR_C_CELLS_DOWN2...');
     window.MINOR_C_CELLS_DOWN2 = transposeCells(BASE_MINOR_C_CELLS, -2, "C");
     console.log('MINOR_C_CELLS_DOWN2 generated:', window.MINOR_C_CELLS_DOWN2.length, 'cells');
@@ -489,6 +493,7 @@ function initializeTransposedCells() {
     window.CELLS_up5_GLOBAL = window.CELLS_up5;
     window.CELLS_up2_GLOBAL = window.CELLS_up2;
     window.CELLS_down5_GLOBAL = window.CELLS_down5;
+    window.CELLS_down4_GLOBAL = window.CELLS_down4;
 }
 
 // ============================================================================
@@ -516,6 +521,7 @@ const BIIICELLS = window.BIIICELLS;
 
 // Transposed cell sets will be available after initializeTransposedCells() is called
 // These will be initialized in the DOMContentLoaded event
+let CELLS_down4 = window.CELLS_down4;
 
 // Pitch classes
 window.PITCH_CLASSES_SHARP = {0: "C", 1: "C#", 2: "D", 3: "D#", 4: "E", 5: "F",
@@ -543,18 +549,18 @@ window.KEY_CHORD_MAP = {
         "F": "usable on Cm, F7, Aø7, B7Alt"
     },
     "major": {
-        "C": "usable on C",
-        "G": "usable on G",
-        "D": "usable on D",
-        "A": "usable on A",
-        "E": "usable on E",
-        "B": "usable on B",
-        "F#": "usable on F#",
-        "Db": "usable on Db",
-        "Ab": "usable on Ab",
-        "Eb": "usable on Eb",
-        "Bb": "usable on Bb",
-        "F": "usable on F"
+        "C": "in the key of C",
+        "G": "in the key of G",
+        "D": "in the key of D",
+        "A": "in the key of A",
+        "E": "in the key of E",
+        "B": "in the key of B",
+        "F#": "in the key of F#",
+        "Db": "in the key of Db",
+        "Ab": "in the key of Ab",
+        "Eb": "in the key of Eb",
+        "Bb": "in the key of Bb",
+        "F": "in the key of F"
     },
     "short_25_major": {
         "C": "in the key of F",
