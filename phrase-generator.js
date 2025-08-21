@@ -109,6 +109,16 @@ function initializeCyclers(phraseType) {
         console.log('Initializing biii_to_ii_old cyclers - left from CELLS_up2, right from BASE_BIIICELLS');
         leftCycler = new Cycler(window.CELLS_up2);
         rightCycler = new Cycler(window.BASE_BIIICELLS);
+    } else if (phraseType === "d7_to_db") {
+        console.log('Initializing II7 to bII cyclers - using 4-position construction');
+        
+        // Check if required cell sets are available
+        if (!window.CELLS_up2 || !window.MAJOR_CELLS_down4) {
+            throw new Error(`Required cell sets not available: CELLS_up2=${!!window.CELLS_up2}, MAJOR_CELLS_down4=${!!window.MAJOR_CELLS_down4}`);
+        }
+        
+        // For II7 to bII, we don't need leftCycler and rightCycler as we use 4 separate positions
+        // The phrase generation function handles this directly
     } else if (phraseType === "major" || phraseType === "long_major") {
         leftCycler = new Cycler(MAJOR_CELLS);
         rightCycler = new Cycler(MAJOR_CELLS);
@@ -129,7 +139,7 @@ function initializeCyclers(phraseType) {
     // Initialize resolution cycler - EXACT MATCH TO PYTHON
     if (phraseType === "long_25_minor") {
         resolutionCycler = new Cycler(MINOR_C_CELLS);
-    } else if (phraseType === "short_25_major" || phraseType === "long_25_major" || phraseType === "turnaround" || phraseType === "backdoor_25" || phraseType === "iv_iv") {
+    } else if (phraseType === "short_25_major" || phraseType === "long_25_major" || phraseType === "turnaround" || phraseType === "backdoor_25" || phraseType === "iv_iv" || phraseType === "d7_to_db") {
         resolutionCycler = new Cycler(MAJOR_RESOLUTION_CELLS);
     } else if (phraseType === "rhythm_changes_56") {
         resolutionCycler = new Cycler(DFB);
@@ -142,6 +152,81 @@ function initializeCyclers(phraseType) {
     } else {
         resolutionCycler = null;
     }
+}
+
+// Check if phrase contains the forbidden shape (including all 12 transpositions)
+function containsForbiddenShape(phrase) {
+    const baseForbiddenShape = ["A4", "F4", "E4", "D4", "G4", "A4", "B4", "D5", "F5"];
+    
+    console.log('Checking forbidden shape for phrase:', phrase);
+    console.log('Base forbidden shape:', baseForbiddenShape);
+    
+    // Helper function to get pitch class from note (ignoring octave)
+    const getPitchClass = (note) => {
+        const noteName = note.slice(0, -1);
+        const pitchClassMap = {0: 'C', 1: 'C#', 2: 'D', 3: 'D#', 4: 'E', 5: 'F', 6: 'F#', 7: 'G', 8: 'G#', 9: 'A', 10: 'A#', 11: 'B'};
+        const pitchClassMapFlat = {0: 'C', 1: 'Db', 2: 'D', 3: 'Eb', 4: 'E', 5: 'F', 6: 'Gb', 7: 'G', 8: 'Ab', 9: 'A', 10: 'Bb', 11: 'B'};
+        
+        let pitchClass;
+        if (noteName.includes('#')) {
+            pitchClass = Object.keys(pitchClassMap).find(key => pitchClassMap[key] === noteName);
+        } else if (noteName.includes('b')) {
+            pitchClass = Object.keys(pitchClassMapFlat).find(key => pitchClassMapFlat[key] === noteName);
+        } else {
+            pitchClass = Object.keys(pitchClassMap).find(key => pitchClassMap[key] === noteName) || 
+                        Object.keys(pitchClassMapFlat).find(key => pitchClassMapFlat[key] === noteName);
+        }
+        
+        return pitchClass !== undefined ? parseInt(pitchClass) : null;
+    };
+    
+    // Get pitch classes for base forbidden shape
+    const baseForbiddenPitchClasses = baseForbiddenShape.map(note => getPitchClass(note));
+    console.log('Base forbidden pitch classes:', baseForbiddenPitchClasses);
+    
+    // Get pitch classes for the phrase
+    const phrasePitchClasses = phrase.map(note => getPitchClass(note));
+    console.log('Phrase pitch classes:', phrasePitchClasses);
+    
+    // Generate all 12 transpositions of the forbidden shape pitch classes
+    const allForbiddenPitchClassShapes = [];
+    for (let semitone = 0; semitone < 12; semitone++) {
+        const transposedPitchClasses = baseForbiddenPitchClasses.map(pc => (pc + semitone) % 12);
+        allForbiddenPitchClassShapes.push(transposedPitchClasses);
+    }
+    
+    console.log('All 12 transposed forbidden pitch class shapes:');
+    allForbiddenPitchClassShapes.forEach((shape, i) => {
+        console.log(`Transposition ${i}:`, shape);
+    });
+    
+    // For short phrases, check if the entire phrase matches any transposition
+    if (phrase.length === 9) {
+        for (const forbiddenPitchClasses of allForbiddenPitchClassShapes) {
+            if (JSON.stringify(phrasePitchClasses) === JSON.stringify(forbiddenPitchClasses)) {
+                console.log('Found exact match with forbidden pitch class shape:', forbiddenPitchClasses);
+                return true;
+            }
+        }
+    }
+    
+    // For long phrases, check if any transposition appears as a subsequence
+    if (phrase.length > 9) {
+        for (const forbiddenPitchClasses of allForbiddenPitchClassShapes) {
+            // Check for the shape as a consecutive subsequence
+            for (let i = 0; i <= phrasePitchClasses.length - forbiddenPitchClasses.length; i++) {
+                const subsequence = phrasePitchClasses.slice(i, i + forbiddenPitchClasses.length);
+                if (JSON.stringify(subsequence) === JSON.stringify(forbiddenPitchClasses)) {
+                    console.log('Found forbidden pitch class shape as subsequence:', forbiddenPitchClasses);
+                    console.log('At position:', i, 'in phrase');
+                    return true;
+                }
+            }
+        }
+    }
+    
+    console.log('No forbidden shape found in phrase');
+    return false;
 }
 
 // Generate phrase based on type - EXACT MATCH TO PYTHON
@@ -174,8 +259,9 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
         "long_25_minor": 17,
         "backdoor_25": 17,
         "short_backdoor_25": 9,
-        "tritone_sub_25_major": 17,
-        "tritone_sub_25_minor": 17,
+            "tritone_sub_25_major": 17,
+    "tritone_sub_25_minor": 17,
+    "d7_to_db": 17,
         "iv_iv": 17,
         "short_iv_iv": 9,
         "turnaround": 17,
@@ -284,6 +370,10 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
                 const result = generateTritoneSub25MinorPhrase(keyName);
                 phrase = result.phrase;
                 phraseLength = result.length;
+            } else if (phraseType === "d7_to_db") {
+                const result = generateD7ToDbPhrase(keyName);
+                phrase = result.phrase;
+                phraseLength = result.length;
             } else if (phraseType === "short_iv_iv") {
                 const result = generateShortIVIVPhrase(keyName);
                 phrase = result.phrase;
@@ -339,9 +429,16 @@ function generatePhrase(phraseType = "7sus4", selectedKey = null, chordType = nu
             
             // CRITICAL: Check if phrase is within range and correct length (exactly like Python)
             if (phraseLength === expectedLengths[phraseType] && isPhraseInRange(octaveAdjustedPhrase)) {
+                // Check if phrase contains the forbidden shape
+                if (containsForbiddenShape(octaveAdjustedPhrase)) {
+                    console.log(`Phrase contains forbidden shape, regenerating...`);
+                    attempts++;
+                    continue;
+                }
+                
                 console.log(`Phrase type: ${phraseType}, keyName=${keyName}, phrase length=${phraseLength}`);
                 console.log('Final phrase:', octaveAdjustedPhrase);
-                console.log('Phrase passed range and length validation');
+                console.log('Phrase passed range, length, and shape validation');
                 
                 return {
                     phrase: octaveAdjustedPhrase,
@@ -1955,15 +2052,15 @@ function generateTritoneSub25MinorPhrase(keyName) {
 // Generate short IV – iv – phrase (2 cells)
 function generateShortIVIVPhrase(keyName) {
     console.log('generateShortIVIVPhrase called with keyName:', keyName);
-    console.log('BASE_MAJOR_RESOLUTION_CELLS_down5 available:', window.BASE_MAJOR_RESOLUTION_CELLS_down5 ? window.BASE_MAJOR_RESOLUTION_CELLS_down5.length : 'undefined');
+    console.log('BACKDOOR_RESOLUTION available:', window.BACKDOOR_RESOLUTION ? window.BACKDOOR_RESOLUTION.length : 'undefined');
     console.log('MAJOR_CELLS_up5 available:', window.MAJOR_CELLS_up5 ? window.MAJOR_CELLS_up5.length : 'undefined');
     
     const maxAttempts = 100;
     let attempts = 0;
     
     while (attempts < maxAttempts) {
-        // Create a cycler for the transposed resolution cells (right cell)
-        const resolutionCyclerTransposed = new Cycler(window.BASE_MAJOR_RESOLUTION_CELLS_down5);
+        // Create a cycler for the backdoor resolution cells (right cell)
+        const resolutionCyclerTransposed = new Cycler(window.BACKDOOR_RESOLUTION);
         let resolutionCell = resolutionCyclerTransposed.nextItem();
         console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
         
@@ -1996,7 +2093,7 @@ function generateShortIVIVPhrase(keyName) {
 // Generate IV – iv – phrase - COMPLETE REIMPLEMENTATION
 function generateIVIVPhrase(keyName) {
     console.log('generateIVIVPhrase called with keyName:', keyName);
-    console.log('BASE_MAJOR_RESOLUTION_CELLS_down5 available:', window.BASE_MAJOR_RESOLUTION_CELLS_down5 ? window.BASE_MAJOR_RESOLUTION_CELLS_down5.length : 'undefined');
+    console.log('BACKDOOR_RESOLUTION available:', window.BACKDOOR_RESOLUTION ? window.BACKDOOR_RESOLUTION.length : 'undefined');
     console.log('CELLS2_down2 available:', window.CELLS2_down2 ? window.CELLS2_down2.length : 'undefined');
     console.log('MAJOR_CELLS_up5 available:', window.MAJOR_CELLS_up5 ? window.MAJOR_CELLS_up5.length : 'undefined');
     
@@ -2004,8 +2101,8 @@ function generateIVIVPhrase(keyName) {
     let attempts = 0;
     
     while (attempts < maxAttempts) {
-        // Create a cycler for the transposed resolution cells
-        const resolutionCyclerTransposed = new Cycler(window.BASE_MAJOR_RESOLUTION_CELLS_down5);
+        // Create a cycler for the backdoor resolution cells
+        const resolutionCyclerTransposed = new Cycler(window.BACKDOOR_RESOLUTION);
         let resolutionCell = resolutionCyclerTransposed.nextItem();
         console.log('Attempt', attempts + 1, 'resolution cell:', resolutionCell);
         
@@ -2019,7 +2116,7 @@ function generateIVIVPhrase(keyName) {
             'MAJOR_CELLS_up5': new Set()
         };
         
-        // Add the resolution cell to the appropriate set (it's from BASE_MAJOR_RESOLUTION_CELLS_down5)
+        // Add the resolution cell to the appropriate set (it's from BACKDOOR_RESOLUTION)
         usedCellsPerSet['MAJOR_CELLS_up5'].add(resolutionCell.join(' '));
         
         for (let i = 0; i < cellSets.length; i++) {
@@ -2461,10 +2558,106 @@ function testLongCells() {
     }
 }
 
+// Generate II7 to bII phrase (4+4+4+4+1 = 17 notes)
+function generateD7ToDbPhrase(keyName) {
+    console.log('generateD7ToDbPhrase called with keyName:', keyName);
+    
+    // Check if required cell sets are available
+    if (!window.CELLS_up2 || !window.MAJOR_CELLS_down4) {
+        throw new Error(`Required cell sets not available: CELLS_up2=${!!window.CELLS_up2}, MAJOR_CELLS_down4=${!!window.MAJOR_CELLS_down4}`);
+    }
+    
+    const maxAttempts = 100;
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        try {
+            console.log(`Attempt ${attempts + 1}: Starting phrase generation...`);
+            
+            // Apply filters to the ALREADY TRANSPOSED cells (not base cells)
+            
+            // Position 3 filter: only cells ending with C or G (in the transposed key)
+            const filteredMAJOR_CELLS_down4 = window.MAJOR_CELLS_down4.filter(cell => {
+                const lastNote = cell[cell.length - 1].slice(0, -1); // Remove octave
+                return lastNote === 'C' || lastNote === 'G';
+            });
+            
+            // Position 0 filter: exclude cells starting with G AND ensure they end with C or G (in the transposed key)
+            const filteredCELLS_up2 = window.CELLS_up2.filter(cell => {
+                const firstNote = cell[0].slice(0, -1); // Remove octave
+                const lastNote = cell[cell.length - 1].slice(0, -1); // Remove octave
+                return firstNote !== 'G' && (lastNote === 'C' || lastNote === 'G');
+            });
+            
+            console.log(`Filtered MAJOR_CELLS_down4 for Position 3: ${filteredMAJOR_CELLS_down4.length} cells (ending with C or G)`);
+            console.log(`Filtered CELLS_up2 for Position 0: ${filteredCELLS_up2.length} cells (not starting with G)`);
+            
+            if (filteredMAJOR_CELLS_down4.length === 0) {
+                throw new Error('No MAJOR_CELLS_down4 cells found ending with C or G');
+            }
+            
+            if (filteredCELLS_up2.length === 0) {
+                throw new Error('No CELLS_up2 cells found not starting with G');
+            }
+            
+            // Position 3 (Resolution): Start with filtered MAJOR_CELLS_down4 cell (5 notes)
+            const initialPos3Cell = filteredMAJOR_CELLS_down4[Math.floor(Math.random() * filteredMAJOR_CELLS_down4.length)];
+            let phrase = [...initialPos3Cell]; // Start with full 5-note cell
+            console.log('Starting with position 3 (resolution):', initialPos3Cell, 'starts with:', initialPos3Cell[0], 'ends with:', initialPos3Cell[initialPos3Cell.length - 1]);
+            
+            // Define cell sets for each position (right to left)
+            const cellSets = [window.MAJOR_CELLS_down4, window.CELLS_up2, filteredCELLS_up2];
+            const positionNames = ['Position 2', 'Position 1', 'Position 0'];
+            
+            // Build phrase backwards (right to left) exactly like generateLong25MajorPhrase
+            for (let i = 0; i < cellSets.length; i++) {
+                const cellSet = cellSets[i];
+                const positionName = positionNames[i];
+                const firstNoteCurrent = phrase[0].slice(0, -1); // Remove octave
+                
+                console.log(`Looking for ${positionName} cells ending with pitch class:`, firstNoteCurrent);
+                
+                const compatibleCells = cellSet.filter(cell => 
+                    cell[cell.length - 1].slice(0, -1) === firstNoteCurrent
+                );
+                
+                if (compatibleCells.length === 0) {
+                    throw new Error(`No compatible cells found for ${positionName} ending with ${firstNoteCurrent}`);
+                }
+                
+                const leftCell = compatibleCells[Math.floor(Math.random() * compatibleCells.length)];
+                console.log(`${positionName}:`, leftCell, 'ends with:', leftCell[leftCell.length - 1], 'connects to phrase starting with:', firstNoteCurrent);
+                
+                const adjustedNewCell = adjustRightCell(leftCell, phrase);
+                phrase = leftCell.slice(0, -1).concat(adjustedNewCell);
+                console.log(`Added ${positionName}:`, leftCell.slice(0, -1), 'phrase now:', phrase);
+            }
+            
+            console.log(`Phrase constructed: ${phrase.length} notes total`);
+            console.log(`Final phrase ends with: ${phrase[phrase.length - 1]} (pitch class: ${phrase[phrase.length - 1].slice(0, -1)})`);
+            
+            if (phrase.length === 17) {
+                console.log('Successfully generated II7 to bII phrase:', phrase);
+                return { phrase: phrase, length: phrase.length };
+            } else {
+                console.log(`Phrase length ${phrase.length} is not 17, retrying...`);
+            }
+            
+        } catch (error) {
+            console.log(`Attempt ${attempts + 1} failed:`, error.message);
+        }
+        
+        attempts++;
+    }
+    
+    throw new Error("Failed to generate a valid II7 to bII phrase after maximum attempts");
+}
+
 // Make test function available globally
 if (typeof window !== 'undefined') {
     window.testLongCells = testLongCells;
     window.generatePhrase = generatePhrase;
+    window.generateD7ToDbPhrase = generateD7ToDbPhrase;
 }
 
 // Export the generatePhrase function

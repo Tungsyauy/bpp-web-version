@@ -51,6 +51,8 @@ const BASE_CELLS = [
     ["Bb3", "F4", "D4", "Bb3", "A3"],
     //7.24
     ["F#4", "D4", "F4", "Eb4", "E4"],
+    //8.21
+    ["E4","F4","E4","D4","C4"],
 ];
 
 // Additional cells unique to CELLS2 (these are only in CELLS2, not in base CELLS)
@@ -414,6 +416,10 @@ function initializeTransposedCells() {
     window.MAJOR_CELLS_up5 = transposeCells(BASE_MAJOR_CELLS, 5, "C");
     console.log('MAJOR_CELLS_up5 generated:', window.MAJOR_CELLS_up5.length, 'cells');
     
+    console.log('Generating MAJOR_CELLS_down4...');
+    window.MAJOR_CELLS_down4 = transposeCells(BASE_MAJOR_CELLS, -4, "C");
+    console.log('MAJOR_CELLS_down4 generated:', window.MAJOR_CELLS_down4.length, 'cells');
+    
     // Filter out cells that contain the note Bb
     console.log('Filtering out cells containing Bb from MAJOR_CELLS_up5...');
     const originalMAJOR_CELLS_up5Count = window.MAJOR_CELLS_up5.length;
@@ -494,6 +500,7 @@ function initializeTransposedCells() {
     window.CELLS_up2_GLOBAL = window.CELLS_up2;
     window.CELLS_down5_GLOBAL = window.CELLS_down5;
     window.CELLS_down4_GLOBAL = window.CELLS_down4;
+    window.MAJOR_CELLS_down4_GLOBAL = window.MAJOR_CELLS_down4;
 }
 
 // ============================================================================
@@ -522,6 +529,7 @@ const BIIICELLS = window.BIIICELLS;
 // Transposed cell sets will be available after initializeTransposedCells() is called
 // These will be initialized in the DOMContentLoaded event
 let CELLS_down4 = window.CELLS_down4;
+let MAJOR_CELLS_down4 = window.MAJOR_CELLS_down4;
 
 // Pitch classes
 window.PITCH_CLASSES_SHARP = {0: "C", 1: "C#", 2: "D", 3: "D#", 4: "E", 5: "F",
@@ -743,6 +751,20 @@ window.KEY_CHORD_MAP = {
         "Eb": "Ab – Abm –",
         "Bb": "Eb – Ebm –",
         "F": "Bb – Bbm –"
+    },
+    "d7_to_db": {
+        "C": "II7 – bII –",
+        "G": "II7 – bII –",
+        "D": "II7 – bII –",
+        "A": "II7 – bII –",
+        "E": "II7 – bII –",
+        "B": "II7 – bII –",
+        "F#": "II7 – bII –",
+        "Db": "II7 – bII –",
+        "Ab": "II7 – bII –",
+        "Eb": "II7 – bII –",
+        "Bb": "II7 – bII –",
+        "F": "II7 – bII –"
     }
 };
 
@@ -966,7 +988,7 @@ if (typeof module !== 'undefined' && module.exports) {
         KEYS, PITCH_CLASSES_SHARP, PITCH_CLASSES_FLAT, FLAT_KEYS, KEY_CHORD_MAP, 
         get_7sus4_chord_display, find_7sus4_generation_key, find_7sus4_target_key_for_display,
         Random7sus4Cycler, RandomKeyCycler, random_7sus4_cycler, random_key_cycler,
-        initializeTransposedCells
+        initializeTransposedCells, MAJOR_CELLS_down4
     };
 }
 

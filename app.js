@@ -211,6 +211,11 @@ function setupEventListeners() {
         navigateToGenerator();
     });
 
+    document.getElementById('d7-to-db-btn').addEventListener('click', () => {
+        appState.phraseType = 'd7_to_db';
+        navigateToGenerator();
+    });
+
     document.getElementById('iv-iv-btn').addEventListener('click', () => {
         appState.phraseType = 'iv_iv';
         showScreen('length');
@@ -317,7 +322,7 @@ function setupEventListeners() {
             document.getElementById('length-return').addEventListener('click', () => {
             if (appState.phraseType === '7sus4') {
                 showScreen('chord-type');
-            } else if (appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' || appState.phraseType === 'backdoor_25' || appState.phraseType === 'tritone_sub_25_major' || appState.phraseType === 'tritone_sub_25_minor') {
+            } else if (appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' || appState.phraseType === 'backdoor_25' || appState.phraseType === 'tritone_sub_25_major' || appState.phraseType === 'tritone_sub_25_minor' || appState.phraseType === 'd7_to_db') {
                 showScreen('25-type');
             } else if (appState.phraseType === 'iii_to_biii' || appState.phraseType === 'biii_to_ii_old') {
                 showScreen('biii-to-ii-type');
@@ -340,12 +345,16 @@ function setupEventListeners() {
             }
         });
 
-    // Keyboard navigation
+    // Keyboard navigation (PC mode)
+    // Escape, Delete, or Backspace keys act as backward navigation
     document.addEventListener('keydown', handleKeyPress);
 }
 
+// Handle keyboard input for PC mode
+// Escape, Delete, or Backspace keys act as backward navigation
+// Enter or Space keys control phrase display in phrase generator
 function handleKeyPress(event) {
-    if (event.key === 'Escape') {
+    if (event.key === 'Escape' || event.key === 'Delete' || event.key === 'Backspace') {
         handleBackNavigation();
     } else if (event.key === 'Enter' || event.key === ' ') {
         if (appState.currentScreen === 'phrase-generator') {
@@ -359,29 +368,55 @@ function handleKeyPress(event) {
 }
 
 function handleBackNavigation() {
+    console.log('Back navigation triggered from screen:', appState.currentScreen);
+    
     switch (appState.currentScreen) {
         case 'welcome':
+            console.log('Already at welcome screen, no navigation needed');
             return;
         case 'mode':
+            console.log('Navigating from mode to welcome');
             showScreen('welcome');
             break;
         case 'key':
+            console.log('Navigating from key to mode');
             showScreen('mode');
             break;
         case 'phrase-type':
             if (appState.mode === 'designate') {
+                console.log('Navigating from phrase-type to key (designate mode)');
                 showScreen('key');
             } else {
+                console.log('Navigating from phrase-type to mode (random mode)');
                 showScreen('mode');
             }
             break;
         case 'chord-type':
+            console.log('Navigating from chord-type to phrase-type');
             showScreen('phrase-type');
+            break;
+        case '25-type':
+            console.log('Navigating from 25-type to phrase-type');
+            showScreen('phrase-type');
+            break;
+        case 'biii-to-ii-type':
+            console.log('Navigating from biii-to-ii-type to phrase-type');
+            showScreen('phrase-type');
+            break;
+        case 'i-dim-to-i-type':
+            console.log('Navigating from i-dim-to-i-type to phrase-type');
+            showScreen('phrase-type');
+            break;
+        case 'tritone-sub-25-type':
+            console.log('Navigating from tritone-sub-25-type to 25-type');
+            showScreen('25-type');
             break;
         case 'length':
             if (appState.phraseType === '7sus4') {
+                console.log('Navigating from length to chord-type (7sus4)');
                 showScreen('chord-type');
             } else {
+                console.log('Navigating from length to phrase-type (non-7sus4)');
                 showScreen('phrase-type');
             }
             break;
@@ -389,12 +424,18 @@ function handleBackNavigation() {
             if (appState.phraseType === '7sus4' || appState.phraseType === 'major' || 
                 appState.phraseType === 'major_25' || appState.phraseType === 'minor_25' ||
                 appState.phraseType === 'iv_iv') {
+                console.log('Navigating from phrase-generator to length');
                 showScreen('length');
-            } else if (appState.phraseType === 'tritone_sub_25_major' || appState.phraseType === 'tritone_sub_25_minor') {
+            } else if (appState.phraseType === 'tritone_sub_25_major' || appState.phraseType === 'tritone_sub_25_minor' || appState.phraseType === 'd7_to_db') {
+                console.log('Navigating from phrase-generator to 25-type');
                 showScreen('25-type');
             } else {
+                console.log('Navigating from phrase-generator to phrase-type');
                 showScreen('phrase-type');
             }
+            break;
+        default:
+            console.log('Unknown screen for back navigation:', appState.currentScreen);
             break;
     }
 }
@@ -444,6 +485,16 @@ function updateScreenTitles() {
         document.getElementById('25-type-title').textContent = 'Choose 25 Type';
     }
 
+    // Update tritone-sub-25-type screen title
+    if (appState.mode === 'designate' && appState.selectedKey) {
+        document.getElementById('tritone-sub-25-type-title').textContent = 
+            `Key of ${appState.selectedKey}: Choose Tritone-sub 25 Type`;
+    } else if (appState.mode === 'random') {
+        document.getElementById('tritone-sub-25-type-title').textContent = 'Random Key: Choose Tritone-sub 25 Type';
+    } else {
+        document.getElementById('tritone-sub-25-type-title').textContent = 'Choose Tritone-sub 25 Type';
+    }
+
     // Update length screen title
     if (appState.mode === 'designate' && appState.selectedKey) {
         let phraseTypeDisplay = getChordProgressionDisplayForTitle(appState.phraseType, appState.selectedKey);
@@ -466,6 +517,7 @@ function getPhraseTypeDisplay(phraseType) {
         case 'backdoor_25': return 'Backdoor 25';
         case 'tritone_sub_25_major': return 'Tritone-sub 25 Major';
         case 'tritone_sub_25_minor': return 'Tritone-sub 25 Minor';
+        case 'd7_to_db': return 'II7 to bII';
         case 'iv_iv': return 'IV to iv';
         case 'short_iv_iv': return 'IV to iv';
         case 'ii7_to_v7': return 'II7 to ii';
@@ -486,6 +538,8 @@ function getChordProgressionDisplayForTitle(phraseType, key) {
         return getIV7ToIvSharpDimChordProgression(key);
     } else if (phraseType === 'iv_sharp_half_dim_to_vii7' || phraseType === 'long_iv_sharp_half_dim_to_vii7') {
         return getIvSharpHalfDimToVii7ChordProgression(key);
+    } else if (phraseType === 'd7_to_db') {
+        return window.KEY_CHORD_MAP["d7_to_db"][key];
     }
     // For other phrase types, fall back to the regular display
     return getPhraseTypeDisplay(phraseType);
@@ -991,6 +1045,8 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return `Tritone-sub 25 Major in the key of ${selectedKey}`;
         } else if (phraseType === "tritone_sub_25_minor") {
             return `Tritone-sub 25 Minor in the key of ${selectedKey}`;
+        } else if (phraseType === "d7_to_db") {
+            return window.KEY_CHORD_MAP["d7_to_db"][selectedKey];
         } else if (phraseType === "iv_iv" || phraseType === "short_iv_iv") {
             return window.KEY_CHORD_MAP["iv_iv"][selectedKey];
         } else if (phraseType.includes("major")) {
@@ -1053,6 +1109,8 @@ function getKeyDisplayText(phraseType, selectedKey, generatedKey) {
             return `Tritone-sub 25 Major in the key of ${generatedKey}`;
         } else if (phraseType === "tritone_sub_25_minor") {
             return `Tritone-sub 25 Minor in the key of ${generatedKey}`;
+        } else if (phraseType === "d7_to_db") {
+            return window.KEY_CHORD_MAP["d7_to_db"][generatedKey];
         } else if (phraseType === "iv_iv" || phraseType === "short_iv_iv") {
             return window.KEY_CHORD_MAP["iv_iv"][generatedKey];
         } else {
