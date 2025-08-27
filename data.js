@@ -52,7 +52,19 @@ const BASE_CELLS = [
     //7.24
     ["F#4", "D4", "F4", "Eb4", "E4"],
     //8.21
-    ["E4","F4","E4","D4","C4"],
+    //["E4","F4","E4","D4","C4"],
+    //8.27
+    ["Bb4","D5","A4","G4","C5"],
+    ["C5","Bb4","D4","F4","A4"],
+    ["A4","F#4","G4","F4","D4"],
+    ["A4","F#4","G4","Bb3","D4"],
+    ["F4","A4","G4","Bb3","D4"],
+    ["D4","F4","E4","G3","Bb3"],
+    ["Bb3","D4","F4","A4","G4"],
+    ["G4","Bb3","D4","F4","E4"],
+    ["E5","G4","Bb4","D5","C5"],
+
+
 ];
 
 // Additional cells unique to CELLS2 (these are only in CELLS2, not in base CELLS)
@@ -67,6 +79,8 @@ const BASE_CELLS2_ADDITIONAL = [
     ["Bb3", "D4", "F4", "A4", "Ab4"],
     ["Bb4", "D4", "F4", "A4", "Ab4"],
     ["D4", "F4", "F#4", "A4", "Ab4"],
+    //8.27
+    ["E4","G3","Bb3","C4","Db4"]
 ];
 
 // Base cells for major phrases (C major cells)
@@ -193,6 +207,8 @@ const BASE_MINOR_C_CELLS = [
 
     ["C5","G#4","G4","F4","E4"],
     ["C5","G#4","F4","D4","E4"],
+    //8.27
+    ["G#3","F4","E4","B3","D4"],
 ];
 
 // Base turnaround cells
