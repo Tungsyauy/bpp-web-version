@@ -146,6 +146,9 @@ const BASE_MAJOR_RESOLUTION_CELLS = [
     ["A4", "Ab4", "E4", "Db4", "C4"],
     ["Ab4", "E4", "Eb4", "Db4", "C4"],
     ["Ab4", "E5", "Eb5", "Db5", "C5"],
+    //9.1
+    ["Bb4","A4","Eb4","E4","G4"],
+    ["Bb4","C4","Db4","A4","G4"],
 ];
 
 // Base cells for minor phrases (original cells)
@@ -209,6 +212,9 @@ const BASE_MINOR_C_CELLS = [
     ["C5","G#4","F4","D4","E4"],
     //8.27
     ["G#3","F4","E4","B3","D4"],
+    //9.1
+    ["F4","E4","Bb3","B3","D4"],
+    ["F4","G3","Ab3","E4","D4"],
 ];
 
 // Base turnaround cells
