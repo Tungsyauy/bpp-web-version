@@ -434,6 +434,8 @@ function initializeTransposedCells() {
     
     console.log('Generating MAJOR_CELLS_down4...');
     window.MAJOR_CELLS_down4 = transposeCells(BASE_MAJOR_CELLS, -4, "C");
+    // Add the specific cell [F4, Ab4, F4, F#4, G4] directly to MAJOR_CELLS_down4
+    window.MAJOR_CELLS_down4.push(["F4", "Ab4", "F4", "F#4", "G4"]);
     console.log('MAJOR_CELLS_down4 generated:', window.MAJOR_CELLS_down4.length, 'cells');
     
     // Filter out cells that contain the note Bb
