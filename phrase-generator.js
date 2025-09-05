@@ -689,6 +689,11 @@ function generateLong25MajorPhrase(keyName) {
         }
     }
     
+    // Validate phrase for problematic sequence
+    if (!validatePhraseForProblematicSequence(phrase)) {
+        throw new Error("Generated phrase contains problematic sequence, retrying...");
+    }
+    
     return { phrase: phrase, length: phrase.length };
 }
 
@@ -715,6 +720,11 @@ function generateShort25MinorPhrase(keyName) {
     
     const adjustedRight = adjustRightCell(leftCell, rightCell);
     const phrase = leftCell.concat(adjustedRight.slice(1));
+    
+    // Validate phrase for problematic sequence
+    if (!validatePhraseForProblematicSequence(phrase)) {
+        throw new Error("Generated phrase contains problematic sequence, retrying...");
+    }
     
     return { phrase: phrase, length: phrase.length };
 }
@@ -753,6 +763,11 @@ function generateLong25MinorPhrase(keyName) {
         } else {
             throw new Error("No compatible cells found for long_25_minor phrase");
         }
+    }
+    
+    // Validate phrase for problematic sequence
+    if (!validatePhraseForProblematicSequence(phrase)) {
+        throw new Error("Generated phrase contains problematic sequence, retrying...");
     }
     
     return { phrase: phrase, length: phrase.length };
@@ -806,6 +821,13 @@ function generateTurnaroundPhrase(keyName) {
         
         if (validPhrase && phrase.length === 17) {
             phrase = validateResolutionCell(phrase, "turnaround");
+            
+            // Validate phrase for problematic sequence
+            if (!validatePhraseForProblematicSequence(phrase)) {
+                validPhrase = false;
+                continue; // Try again with a new attempt
+            }
+            
             return { phrase: phrase, length: phrase.length };
         }
         
@@ -887,6 +909,12 @@ function generateRhythmChanges56Phrase(keyName) {
         }
         
         if (validPhrase && phrase.length === 17) {
+            // Validate phrase for problematic sequence
+            if (!validatePhraseForProblematicSequence(phrase)) {
+                validPhrase = false;
+                continue; // Try again with a new attempt
+            }
+            
             console.log('Successfully generated rhythm changes 5-6 phrase:', phrase);
             return { phrase: phrase, length: phrase.length };
         }
@@ -945,6 +973,12 @@ function generateII7ToV7Phrase(keyName) {
         }
         
         if (validPhrase && phrase.length === 17) {
+            // Validate phrase for problematic sequence
+            if (!validatePhraseForProblematicSequence(phrase)) {
+                validPhrase = false;
+                continue; // Try again with a new attempt
+            }
+            
             return { phrase: phrase, length: phrase.length };
         }
         
@@ -1039,6 +1073,11 @@ function generateIiiToBiiiPhrase(keyName) {
         // For iii to biii° phrases, use cells directly without octave adjustment to preserve cell shapes
         const adjustedRight = adjustRightCell(leftCell, rightCell);
         const phrase = leftCell.concat(adjustedRight.slice(1));
+        
+        // Validate phrase for problematic sequence
+        if (!validatePhraseForProblematicSequence(phrase)) {
+            continue; // Try again with a new right cell
+        }
         
         return { phrase: phrase, length: phrase.length };
     }
@@ -2637,6 +2676,11 @@ function generateD7ToDbPhrase(keyName) {
             console.log(`Final phrase ends with: ${phrase[phrase.length - 1]} (pitch class: ${phrase[phrase.length - 1].slice(0, -1)})`);
             
             if (phrase.length === 17) {
+                // Validate phrase for problematic sequence
+                if (!validatePhraseForProblematicSequence(phrase)) {
+                    continue; // Skip this attempt and try again
+                }
+                
                 console.log('Successfully generated II7 to bII phrase:', phrase);
                 return { phrase: phrase, length: phrase.length };
             } else {
@@ -2653,11 +2697,69 @@ function generateD7ToDbPhrase(keyName) {
     throw new Error("Failed to generate a valid II7 to bII phrase after maximum attempts");
 }
 
+// Global function to check if a phrase contains any problematic sequences or their transpositions
+function validatePhraseForProblematicSequence(phrase) {
+    // Define all problematic sequences to be filtered out
+    const problematicSequences = [
+        ["D4","Bb4","A4","G4","C5","D5","E5","G5","Bb5"],
+        ["D4", "F4", "E4", "G3", "Bb3", "C3", "Db3", "A3", "G3"],
+        ["G4","Bb4","A4","G4","C5","D5","E5","G5","Bb5"],
+    ];
+    
+    // Function to check if problematic sequence is a subset of the phrase
+    const containsProblematicSequence = (phrase, problematicSeq) => {
+        for (let i = 0; i <= phrase.length - problematicSeq.length; i++) {
+            const subsequence = phrase.slice(i, i + problematicSeq.length);
+            if (subsequence.every((note, index) => note === problematicSeq[index])) {
+                return true;
+            }
+        }
+        return false;
+    };
+    
+    // Function to transpose a sequence by a given number of semitones
+    const transposeSequence = (sequence, semitones) => {
+        return sequence.map(note => {
+            const [pitchClass, octave] = noteToPitch(note);
+            const newPitchClass = (pitchClass + semitones + 12) % 12;
+            const pitchName = PITCH_CLASSES_SHARP[newPitchClass];
+            return `${pitchName}${octave}`;
+        });
+    };
+    
+    // Check each problematic sequence and all its transpositions
+    for (let seqIndex = 0; seqIndex < problematicSequences.length; seqIndex++) {
+        const baseProblematicSequence = problematicSequences[seqIndex];
+        
+        // Check for the base problematic sequence
+        if (containsProblematicSequence(phrase, baseProblematicSequence)) {
+            console.log(`Generated phrase contains base problematic sequence ${seqIndex + 1}, retrying...`);
+            console.log('Base problematic sequence found:', baseProblematicSequence);
+            console.log('Current phrase:', phrase);
+            return false; // Phrase is invalid
+        }
+        
+        // Check for all transpositions of the problematic sequence (1 to 11 semitones)
+        for (let semitones = 1; semitones < 12; semitones++) {
+            const transposedSequence = transposeSequence(baseProblematicSequence, semitones);
+            if (containsProblematicSequence(phrase, transposedSequence)) {
+                console.log(`Generated phrase contains transposed problematic sequence ${seqIndex + 1} (${semitones} semitones), retrying...`);
+                console.log('Transposed problematic sequence found:', transposedSequence);
+                console.log('Current phrase:', phrase);
+                return false; // Phrase is invalid
+            }
+        }
+    }
+    
+    return true; // Phrase is valid
+}
+
 // Make test function available globally
 if (typeof window !== 'undefined') {
     window.testLongCells = testLongCells;
     window.generatePhrase = generatePhrase;
     window.generateD7ToDbPhrase = generateD7ToDbPhrase;
+    window.validatePhraseForProblematicSequence = validatePhraseForProblematicSequence;
 }
 
 // Export the generatePhrase function
